@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -8,7 +10,6 @@ import type { FitnessGoal, FitnessLevel, UserRole } from '@/types'
 
 export default function SignupPage() {
   const router = useRouter()
-  const supabase = createClient()
 
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
@@ -25,7 +26,8 @@ export default function SignupPage() {
     setError(null)
     setLoading(true)
 
-    // 1. Create auth user
+    const supabase = createClient()
+
     const { data, error: authError } = await supabase.auth.signUp({
       email,
       password,
@@ -37,7 +39,6 @@ export default function SignupPage() {
       return
     }
 
-    // 2. Insert profile into users table
     const { error: insertError } = await supabase.from('users').insert({
       id: data.user.id,
       name,

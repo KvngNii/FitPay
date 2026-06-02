@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 
 // Claude trigger 1 of 4: new client onboarding.
 // Fires once when a new client completes signup.
@@ -7,6 +7,6 @@ import { NextRequest, NextResponse } from 'next/server'
 // Output: initial 4-session plan as structured ExerciseEntry[] JSON.
 // Stores result in workout_logs or a dedicated onboarding_plan table.
 // If Claude is unavailable, queue the task — do not break signup flow.
-export async function POST(_req: NextRequest) {
+export async function POST() {
   return NextResponse.json({ status: 'ok', message: 'not implemented' })
 }

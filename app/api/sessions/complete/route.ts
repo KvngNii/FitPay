@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 
 // Marks a session as completed and logs the workout.
 // Trainer-only.
@@ -7,6 +7,6 @@ import { NextRequest, NextResponse } from 'next/server'
 // Triggers /api/engine/progress to generate next_plan via rules engine.
 // If injury_flag = true, triggers /api/ai/adapt.
 // If sessions_in_phase hits multiple of 4, triggers /api/ai/report.
-export async function POST(_req: NextRequest) {
+export async function POST() {
   return NextResponse.json({ status: 'ok', message: 'not implemented' })
 }
