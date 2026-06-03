@@ -112,8 +112,43 @@ export type MoolreResponse<T = unknown> = {
   go: string | null
 }
 
-// Moolre USSD response
+// USSD request — what Moolre POSTs to /api/ussd/callback
+export type UssdRequest = {
+  sessionId: string
+  new: boolean       // true = first dial-in (no user input yet)
+  msisdn: string     // caller's phone number e.g. "233241235993"
+  network: number    // 3=MTN, 5=AT, 6=Telecel
+  message: string    // what the user typed at this step
+  extension: string  // your assigned USSD code e.g. "109"
+  data: string       // extra data from dial string e.g. *203*109*11005# → data="11005"
+}
+
+// USSD response — what we send back to Moolre
 export type UssdResponse = {
-  session_operation: 'continue' | 'end'
-  session_msg: string
+  message: string   // menu text to display
+  reply: boolean    // true = continue session, false = end session
+}
+
+// Moolre payment link response data
+export type MoolrePaymentLinkData = {
+  authorization_url: string
+  reference: string
+}
+
+// Moolre webhook payload
+export type MoolreWebhookPayload = {
+  status: number
+  code: string
+  message: string
+  data: {
+    externalref: string
+    txstatus: number
+    transactionid: string
+    amount: string
+    payer: string
+    payee: string
+    accountnumber: string
+    thirdpartyref: string
+    ts: string
+  }
 }

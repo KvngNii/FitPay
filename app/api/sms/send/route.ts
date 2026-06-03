@@ -1,10 +1,27 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { moolreSms } from '@/lib/moolre'
 
-// Sends an SMS via Moolre SMS API.
-// Called by pg_cron database function for scheduled reminders.
-// Also called directly for booking confirmations and one-off messages.
-// Calls POST /sms/send on Moolre API with fields: to, message, sender_id.
-// Server-side only.
-export async function POST() {
-  return NextResponse.json({ status: 'ok', message: 'not implemented' })
+// Sends a single SMS via Moolre SMS API.
+// Called internally by webhook and pg_cron — not exposed to clients directly.
+// Body: { to: string, message: string }
+export async function POST(req: NextRequest) {
+  const { to, message } = await req.json()
+
+  if (!to || !message) {
+    return NextResponse.json({ error: 'to and message are required' }, { status: 400 })
+  }
+
+  if (message.length > 160) {
+    return NextResponse.json({ error: 'message exceeds 160 characters' }, { status: 400 })
+  }
+
+  const senderid = process.env.MOOLRE_SENDER_ID ?? 'FitPay'
+
+  const result = await moolreSms({
+    type: 1,
+    senderid,
+    messages: [{ recipient: to, message }],
+  })
+
+  return NextResponse.json(result)
 }
