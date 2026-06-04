@@ -58,22 +58,27 @@ export async function POST(req: NextRequest) {
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL!
 
+  const linkPayload = {
+    type: 1,
+    amount: String(pkg.price_ghs),
+    email: profile.email ?? `client-${user.id.slice(0, 8)}@fitpay.app`,
+    externalref,
+    callback: `${appUrl}/api/webhooks/moolre`,
+    redirect: `${appUrl}/client/packages?payment=success`,
+    reusable: '0',
+    expiration_time: 30,
+    currency: 'GHS',
+    accountnumber: MOOLRE_ACCOUNT,
+    metadata: { package_id: pkg.id, client_id: user.id, package_name: pkg.name },
+  }
+  console.log('Moolre payload:', JSON.stringify(linkPayload))
+
   let moolreRes
   try {
-    moolreRes = await moolrePostPub<MoolrePaymentLinkData>('/embed/link', {
-      type: 1,
-      amount: String(pkg.price_ghs),
-      email: profile.email ?? `client-${user.id.slice(0, 8)}@fitpay.app`,
-      externalref,
-      callback: `${appUrl}/api/webhooks/moolre`,
-      redirect: `${appUrl}/client/packages?payment=success`,
-      reusable: '0',
-      expiration_time: 30,
-      currency: 'GHS',
-      accountnumber: MOOLRE_ACCOUNT,
-      metadata: { package_id: pkg.id, client_id: user.id, package_name: pkg.name },
-    })
-  } catch {
+    moolreRes = await moolrePostPub<MoolrePaymentLinkData>('/embed/link', linkPayload)
+    console.log('Moolre response:', JSON.stringify(moolreRes))
+  } catch (err) {
+    console.error('Moolre call failed:', err)
     await admin.from('purchases').delete().eq('moolre_ref', externalref)
     return NextResponse.json({ error: 'Payment service unavailable' }, { status: 502 })
   }
