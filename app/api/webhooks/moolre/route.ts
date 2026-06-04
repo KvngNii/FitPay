@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { createAdminSupabaseClient } from '@/lib/supabase/server'
 import type { MoolreWebhookPayload } from '@/types'
 
 // Always return HTTP 200 — Moolre retries on any non-200 response.
@@ -16,10 +16,10 @@ export async function POST(req: NextRequest) {
     const externalref = payload.data?.externalref
     if (!externalref) return NextResponse.json({ received: true })
 
-    const supabase = createServerSupabaseClient()
+    const admin = createAdminSupabaseClient()
 
     // Idempotency: fetch existing purchase by moolre_ref
-    const { data: purchase } = await supabase
+    const { data: purchase } = await admin
       .from('purchases')
       .select('id, status, client_id, package_id, sessions_left')
       .eq('moolre_ref', externalref)
@@ -31,11 +31,11 @@ export async function POST(req: NextRequest) {
     if (purchase.status === 'active') return NextResponse.json({ received: true })
 
     // Activate the purchase
-    const { error } = await supabase
+    const { error } = await admin
       .from('purchases')
       .update({ status: 'active' })
       .eq('moolre_ref', externalref)
-      .eq('status', 'pending') // extra guard against race conditions
+      .eq('status', 'pending')
 
     if (error) {
       console.error('Webhook: failed to activate purchase', error)
@@ -44,8 +44,8 @@ export async function POST(req: NextRequest) {
 
     // Fetch client and package for SMS confirmation
     const [{ data: client }, { data: pkg }] = await Promise.all([
-      supabase.from('users').select('phone, name').eq('id', purchase.client_id).single(),
-      supabase.from('packages').select('name, sessions').eq('id', purchase.package_id).single(),
+      admin.from('users').select('phone, name').eq('id', purchase.client_id).single(),
+      admin.from('packages').select('name, sessions').eq('id', purchase.package_id).single(),
     ])
 
     // Fire SMS confirmation — non-blocking
@@ -64,7 +64,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ received: true })
   } catch (err) {
     console.error('Webhook error:', err)
-    // Still return 200 — we never want Moolre to retry indefinitely on our bugs
     return NextResponse.json({ received: true })
   }
 }
