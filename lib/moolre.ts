@@ -62,8 +62,10 @@ export async function moolrePostPub<T = unknown>(
     headers: pubHeaders(),
     body: JSON.stringify(body),
   })
+  const rawText = await res.text()
+  console.log(`Moolre raw response [${res.status}] ${path}:`, rawText.slice(0, 500))
   if (!res.ok) throw new Error(`Moolre HTTP ${res.status} on ${path}`)
-  return res.json() as Promise<MoolreResponse<T>>
+  return JSON.parse(rawText) as MoolreResponse<T>
 }
 
 // Use for: SMS sending (requires VAS key, separate from main keys)
