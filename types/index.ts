@@ -141,14 +141,17 @@ export type MoolreWebhookPayload = {
   code: string
   message: string
   data: {
-    externalref: string
     txstatus: number
-    transactionid: string
-    amount: string
     payer: string
-    payee: string
+    terminalid: string
     accountnumber: string
+    name: string
+    amount: string
+    value: string
+    transactionid: string
+    externalref: string
     thirdpartyref: string
+    secret: string
     ts: string
   }
 }

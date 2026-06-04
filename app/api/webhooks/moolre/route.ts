@@ -13,6 +13,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ received: true })
     }
 
+    // Verify the secret matches our wallet secret
+    const webhookSecret = process.env.MOOLRE_WEBHOOK_SECRET
+    if (webhookSecret && payload.data?.secret !== webhookSecret) {
+      console.error('Webhook: secret mismatch')
+      return NextResponse.json({ received: true })
+    }
+
     const externalref = payload.data?.externalref
     if (!externalref) return NextResponse.json({ received: true })
 
