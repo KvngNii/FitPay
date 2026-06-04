@@ -52,7 +52,8 @@ export async function POST(req: NextRequest) {
   })
 
   if (insertError) {
-    return NextResponse.json({ error: 'Failed to create purchase record' }, { status: 500 })
+    console.error('Purchase insert error:', insertError)
+    return NextResponse.json({ error: 'Failed to create purchase record', detail: insertError.message }, { status: 500 })
   }
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL!
