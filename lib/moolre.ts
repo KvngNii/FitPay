@@ -23,19 +23,22 @@ const API_PUBKEY = IS_SANDBOX
 // Sandbox note: X-API-KEY and X-API-PUBKEY are not required in sandbox —
 // only X-API-USER is checked. We still send them for parity with production.
 function baseHeaders() {
-  return {
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     'X-API-USER': API_USER,
-    'X-API-KEY': API_KEY,
   }
+  if (!IS_SANDBOX) headers['X-API-KEY'] = API_KEY
+  return headers
 }
 
 function pubHeaders() {
-  return {
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     'X-API-USER': API_USER,
-    'X-API-PUBKEY': API_PUBKEY,
   }
+  // Sandbox only checks X-API-USER — sending the pubkey causes a Token.php crash
+  if (!IS_SANDBOX) headers['X-API-PUBKEY'] = API_PUBKEY
+  return headers
 }
 
 // Use for: payment initiation, transfers (requires private key)
