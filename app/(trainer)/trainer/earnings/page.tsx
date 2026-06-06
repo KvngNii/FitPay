@@ -1,11 +1,15 @@
-import { createAdminSupabaseClient } from '@/lib/supabase/server'
+import { createAdminSupabaseClient, createServerSupabaseClient } from '@/lib/supabase/server'
+import WithdrawForm from './WithdrawForm'
 
 export const dynamic = 'force-dynamic'
 
 export default async function EarningsPage() {
+  const auth = createServerSupabaseClient()
+  const { data: { user } } = await auth.auth.getUser()
+
   const admin = createAdminSupabaseClient()
 
-  const [{ data: purchases }, { data: disbursements }] = await Promise.all([
+  const [{ data: purchases }, { data: disbursements }, { data: trainer }] = await Promise.all([
     admin
       .from('purchases')
       .select('id, created_at, status, packages(name, price_ghs), users!client_id(name)')
@@ -14,8 +18,14 @@ export default async function EarningsPage() {
     admin
       .from('disbursements')
       .select('id, amount_ghs, type, status, created_at')
+      .eq('trainer_id', user!.id)
       .order('created_at', { ascending: false })
-      .limit(10),
+      .limit(20),
+    admin
+      .from('users')
+      .select('phone')
+      .eq('id', user!.id)
+      .single(),
   ])
 
   const totalRevenue = (purchases ?? []).reduce((sum: number, p: any) => {
@@ -48,19 +58,24 @@ export default async function EarningsPage() {
         </div>
       </div>
 
-      {/* Purchase history */}
+      {/* Withdraw button */}
+      <div className="mb-8">
+        <WithdrawForm available={available} defaultPhone={trainer?.phone ?? ''} />
+      </div>
+
+      {/* Package sales */}
       <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">Package Sales</h2>
       {purchases && purchases.length > 0 ? (
         <div className="space-y-2 mb-8">
           {purchases.map((p: any) => (
             <div key={p.id} className="card flex items-center justify-between">
               <div>
-                <p className="font-medium text-slate-50">{p.users?.name}</p>
+                <p className="font-medium text-slate-50">{(p.users as any)?.name}</p>
                 <p className="text-sm text-slate-400">
-                  {p.packages?.name} · {new Date(p.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                  {(p.packages as any)?.name} · {new Date(p.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
                 </p>
               </div>
-              <p className="font-semibold text-emerald-400">GH₵{p.packages?.price_ghs}</p>
+              <p className="font-semibold text-emerald-400">GH₵{(p.packages as any)?.price_ghs}</p>
             </div>
           ))}
         </div>
@@ -70,10 +85,10 @@ export default async function EarningsPage() {
         </div>
       )}
 
-      {/* Disbursements */}
+      {/* Withdrawal history */}
       {disbursements && disbursements.length > 0 && (
         <>
-          <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">Withdrawals</h2>
+          <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">Withdrawal History</h2>
           <div className="space-y-2">
             {disbursements.map((d: any) => (
               <div key={d.id} className="card flex items-center justify-between">
