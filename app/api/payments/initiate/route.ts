@@ -71,12 +71,9 @@ export async function POST(req: NextRequest) {
     accountnumber: MOOLRE_ACCOUNT,
     metadata: { package_id: pkg.id, client_id: user.id, package_name: pkg.name },
   }
-  console.log('Moolre payload:', JSON.stringify(linkPayload))
-
   let moolreRes
   try {
     moolreRes = await moolrePostPub<MoolrePaymentLinkData>('/embed/link', linkPayload)
-    console.log('Moolre response:', JSON.stringify(moolreRes))
   } catch (err) {
     console.error('Moolre call failed:', err)
     await admin.from('purchases').delete().eq('moolre_ref', externalref)
