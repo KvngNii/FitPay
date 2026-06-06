@@ -96,21 +96,29 @@ export async function POST(req: NextRequest) {
       reference: `FitPay withdrawal - ${profile.name}`,
       accountnumber: MOOLRE_ACCOUNT,
     })
+    console.log('Moolre transfer response:', JSON.stringify(transferRes))
   } catch (err) {
     console.error('Moolre transfer failed:', err)
     await admin.from('disbursements').update({ status: 'failed' }).eq('moolre_ref', externalref)
     return NextResponse.json({ error: 'Transfer service unavailable' }, { status: 502 })
   }
 
-  // Transfer response is synchronous — update status immediately
-  const succeeded = String(transferRes.status) === '1' && (transferRes.data as any)?.txstatus === 1
+  // txstatus: 1=Success, 0=Pending, 2=Failed, 3=Unknown
+  // Per Moolre docs: never assume failure unless txstatus=2
+  const txstatus = (transferRes.data as any)?.txstatus
+  const apiSuccess = String(transferRes.status) === '1'
+
+  let disbursementStatus: 'success' | 'pending' | 'failed' = 'pending'
+  if (apiSuccess && txstatus === 1) disbursementStatus = 'success'
+  else if (txstatus === 2) disbursementStatus = 'failed'
+  else if (!apiSuccess) disbursementStatus = 'failed'
 
   await admin
     .from('disbursements')
-    .update({ status: succeeded ? 'success' : 'failed' })
+    .update({ status: disbursementStatus })
     .eq('moolre_ref', externalref)
 
-  if (!succeeded) {
+  if (disbursementStatus === 'failed') {
     const msg = Array.isArray(transferRes.message)
       ? transferRes.message[0]
       : (transferRes.message ?? 'Transfer failed')
@@ -122,5 +130,6 @@ export async function POST(req: NextRequest) {
     amount: amountNum,
     receiver: (transferRes.data as any)?.receivername ?? phone,
     transactionid: (transferRes.data as any)?.transactionid,
+    status: disbursementStatus,
   })
 }
