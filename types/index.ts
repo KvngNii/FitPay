@@ -79,6 +79,7 @@ export type ProgressionRule = {
   current_phase: string | null
   sessions_in_phase: number
   deload_every_n: number
+  initial_plan: ExerciseEntry[] | null
   last_updated: string
 }
 

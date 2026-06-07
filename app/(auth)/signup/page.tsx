@@ -55,6 +55,15 @@ export default function SignupPage() {
       return
     }
 
+    // Fire onboarding AI trigger for new clients (non-blocking)
+    if (role === 'client') {
+      fetch('/api/ai/onboard', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ client_id: data.user.id }),
+      }).catch(() => {})
+    }
+
     const dest = role === 'trainer' ? '/trainer/dashboard' : '/client/dashboard'
     router.push(dest)
   }
