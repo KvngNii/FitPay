@@ -1,5 +1,6 @@
 import { createAdminSupabaseClient } from '@/lib/supabase/server'
-import Link from 'next/link'
+import { MedicalHistoryCard } from './MedicalHistoryCard'
+import type { MedicalHistory } from '@/types'
 
 export const dynamic = 'force-dynamic'
 
@@ -8,23 +9,37 @@ export default async function ClientsPage() {
 
   const { data: clients } = await admin
     .from('users')
-    .select('id, name, phone, email, goal, fitness_level, health_notes, emergency_contact_name, emergency_contact_phone, created_at')
+    .select('id, name, phone, email, goal, fitness_level, date_of_birth, emergency_contact_name, emergency_contact_phone, created_at')
     .eq('role', 'client')
     .order('created_at', { ascending: false })
 
   const clientIds = clients?.map((c) => c.id) ?? []
 
-  const { data: activePurchases } = clientIds.length > 0
-    ? await admin
-        .from('purchases')
-        .select('client_id, sessions_left, expires_at, packages(name)')
-        .eq('status', 'active')
-        .in('client_id', clientIds)
-    : { data: [] }
+  const [{ data: activePurchases }, { data: medicalHistories }] = await Promise.all([
+    clientIds.length > 0
+      ? admin
+          .from('purchases')
+          .select('client_id, sessions_left, expires_at, packages(name)')
+          .eq('status', 'active')
+          .in('client_id', clientIds)
+      : Promise.resolve({ data: [] }),
+    clientIds.length > 0
+      ? admin.from('medical_history').select('*').in('client_id', clientIds)
+      : Promise.resolve({ data: [] }),
+  ])
 
   const purchaseMap = Object.fromEntries(
     (activePurchases ?? []).map((p: any) => [p.client_id, p])
   )
+
+  const medicalMap = Object.fromEntries(
+    (medicalHistories ?? []).map((m: MedicalHistory) => [m.client_id, m])
+  )
+
+  function calcAge(dob: string | null) {
+    if (!dob) return null
+    return Math.floor((Date.now() - new Date(dob).getTime()) / (365.25 * 24 * 60 * 60 * 1000))
+  }
 
   return (
     <main className="p-4 max-w-2xl mx-auto">
@@ -65,26 +80,27 @@ export default async function ClientsPage() {
                   )}
                 </div>
 
-                {client.goal && (
-                  <div className="mt-2 flex gap-2">
-                    <span className="text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full capitalize">
-                      {client.goal.replace('_', ' ')}
-                    </span>
+                {(client.goal || calcAge(client.date_of_birth)) && (
+                  <div className="mt-2 flex gap-2 flex-wrap">
+                    {client.goal && (
+                      <span className="text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full capitalize">
+                        {client.goal.replace('_', ' ')}
+                      </span>
+                    )}
                     {client.fitness_level && (
                       <span className="text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full capitalize">
                         {client.fitness_level}
                       </span>
                     )}
+                    {calcAge(client.date_of_birth) !== null && (
+                      <span className="text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full">
+                        {calcAge(client.date_of_birth)} yrs
+                      </span>
+                    )}
                   </div>
                 )}
 
-                {client.health_notes && client.health_notes.trim().toLowerCase() !== 'none' && (
-                  <div className="mt-2 px-2.5 py-1.5 rounded-lg bg-yellow-900/20 border border-yellow-800/40">
-                    <p className="text-xs text-yellow-400">
-                      <span className="font-medium">Health note:</span> {client.health_notes}
-                    </p>
-                  </div>
-                )}
+                <MedicalHistoryCard clientId={client.id} history={medicalMap[client.id] ?? null} />
 
                 {client.emergency_contact_name && (
                   <p className="text-xs text-slate-500 mt-2">

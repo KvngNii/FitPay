@@ -22,10 +22,33 @@ export type User = {
   gender: Gender | null
   height_cm: number | null
   weight_kg: number | null
-  health_notes: string | null
   emergency_contact_name: string | null
   emergency_contact_phone: string | null
   created_at: string
+}
+
+export type MedicalHistory = {
+  id: string
+  client_id: string
+  heart_condition_or_bp: boolean
+  chest_pain: boolean
+  dizziness_or_consciousness: boolean
+  chronic_condition: boolean
+  chronic_condition_details: string | null
+  prescribed_medication: boolean
+  medication_details: string | null
+  bone_or_joint_problem: boolean
+  bone_or_joint_details: string | null
+  previous_injuries_surgeries: string | null
+  current_pain_areas: string | null
+  allergies: string | null
+  additional_notes: string | null
+  needs_medical_clearance: boolean
+  trainer_reviewed: boolean
+  trainer_reviewed_at: string | null
+  trainer_notes: string | null
+  created_at: string
+  updated_at: string
 }
 
 export type Package = {

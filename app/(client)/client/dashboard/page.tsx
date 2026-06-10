@@ -1,11 +1,29 @@
 'use client'
 
 import Link from 'next/link'
+import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 export default function ClientDashboard() {
   const router = useRouter()
+
+  useEffect(() => {
+    async function checkMedicalHistory() {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      const { data } = await supabase
+        .from('medical_history')
+        .select('id')
+        .eq('client_id', user.id)
+        .maybeSingle()
+
+      if (!data) router.replace('/onboarding/medical-history')
+    }
+    checkMedicalHistory()
+  }, [router])
 
   async function handleSignOut() {
     const supabase = createClient()
@@ -17,12 +35,17 @@ export default function ClientDashboard() {
     <main className="p-4 max-w-lg mx-auto">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-emerald-400">FitPay</h1>
-        <button
-          onClick={handleSignOut}
-          className="text-sm text-slate-400 hover:text-slate-200 transition-colors"
-        >
-          Sign out
-        </button>
+        <div className="flex items-center gap-4">
+          <Link href="/client/profile" className="text-sm text-slate-400 hover:text-slate-200 transition-colors">
+            Profile
+          </Link>
+          <button
+            onClick={handleSignOut}
+            className="text-sm text-slate-400 hover:text-slate-200 transition-colors"
+          >
+            Sign out
+          </button>
+        </div>
       </div>
 
       <div className="space-y-3">

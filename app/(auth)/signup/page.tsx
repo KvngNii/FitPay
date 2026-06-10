@@ -22,7 +22,6 @@ export default function SignupPage() {
   const [gender, setGender] = useState<Gender>('prefer_not_to_say')
   const [heightCm, setHeightCm] = useState('')
   const [weightKg, setWeightKg] = useState('')
-  const [healthNotes, setHealthNotes] = useState('')
   const [emergencyContactName, setEmergencyContactName] = useState('')
   const [emergencyContactPhone, setEmergencyContactPhone] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -58,7 +57,6 @@ export default function SignupPage() {
       gender: role === 'client' ? gender : null,
       height_cm: role === 'client' && heightCm ? Number(heightCm) : null,
       weight_kg: role === 'client' && weightKg ? Number(weightKg) : null,
-      health_notes: role === 'client' ? healthNotes : null,
       emergency_contact_name: role === 'client' ? emergencyContactName : null,
       emergency_contact_phone: role === 'client' ? emergencyContactPhone : null,
     })
@@ -69,16 +67,9 @@ export default function SignupPage() {
       return
     }
 
-    // Fire onboarding AI trigger for new clients (non-blocking)
-    if (role === 'client') {
-      fetch('/api/ai/onboard', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ client_id: data.user.id }),
-      }).catch(() => {})
-    }
-
-    const dest = role === 'trainer' ? '/trainer/dashboard' : '/client/dashboard'
+    // Clients must complete the medical history intake before training begins.
+    // The onboarding AI trigger fires after that step, once injuries are known.
+    const dest = role === 'trainer' ? '/trainer/dashboard' : '/onboarding/medical-history'
     router.push(dest)
   }
 
@@ -248,27 +239,6 @@ export default function SignupPage() {
                     required
                   />
                 </div>
-              </div>
-
-              <div className="pt-2 border-t border-slate-800">
-                <p className="text-sm font-semibold text-slate-300 mt-3 mb-1">Health & safety</p>
-                <p className="text-xs text-slate-500 mb-2">
-                  This helps your trainer build a plan that's safe for you.
-                </p>
-              </div>
-
-              <div>
-                <label htmlFor="health_notes">
-                  Do you have any current injuries, chronic pain, or medical conditions?
-                </label>
-                <textarea
-                  id="health_notes"
-                  placeholder="e.g., None — or describe any injuries/conditions and affected areas"
-                  value={healthNotes}
-                  onChange={(e) => setHealthNotes(e.target.value)}
-                  rows={3}
-                  required
-                />
               </div>
 
               <div className="pt-2 border-t border-slate-800">
