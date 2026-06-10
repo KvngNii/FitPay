@@ -14,6 +14,7 @@ export type MedicalHistoryFormState = {
   current_pain_areas: string
   allergies: string
   additional_notes: string
+  consent_acknowledged: boolean
 }
 
 export const EMPTY_MEDICAL_HISTORY: MedicalHistoryFormState = {
@@ -30,7 +31,15 @@ export const EMPTY_MEDICAL_HISTORY: MedicalHistoryFormState = {
   current_pain_areas: '',
   allergies: '',
   additional_notes: '',
+  consent_acknowledged: false,
 }
+
+export const CONSENT_TEXT =
+  "I, the undersigned, have read, understood to my full satisfaction and completed this questionnaire. " +
+  "I acknowledge that this physical activity clearance is valid for a maximum of 12 months from the date " +
+  "it is completed and becomes invalid if my condition changes. I also acknowledge that the community/fitness " +
+  "center may retain a copy of this form for its records. In these instances, it will maintain the " +
+  "confidentiality of the same."
 
 function YesNoQuestion({
   question,
@@ -201,6 +210,19 @@ export function MedicalHistoryFields({
           onChange={(e) => set('additional_notes', e.target.value)}
           rows={2}
         />
+      </div>
+
+      <div className="pt-2 border-t border-slate-800">
+        <label className="flex items-start gap-3 cursor-pointer pt-3">
+          <input
+            type="checkbox"
+            checked={value.consent_acknowledged}
+            onChange={(e) => set('consent_acknowledged', e.target.checked)}
+            required
+            className="w-4 h-4 mt-0.5 rounded accent-emerald-500 shrink-0"
+          />
+          <span className="text-xs text-slate-400 leading-relaxed">{CONSENT_TEXT}</span>
+        </label>
       </div>
     </div>
   )

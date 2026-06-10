@@ -28,6 +28,12 @@ export default function MedicalHistoryPage() {
       return
     }
 
+    if (!form.consent_acknowledged) {
+      setError('Please confirm the declaration before continuing.')
+      setLoading(false)
+      return
+    }
+
     const { error: insertError } = await supabase.from('medical_history').upsert({
       client_id: user.id,
       heart_condition_or_bp: form.heart_condition_or_bp,
@@ -43,6 +49,8 @@ export default function MedicalHistoryPage() {
       current_pain_areas: form.current_pain_areas || null,
       allergies: form.allergies || null,
       additional_notes: form.additional_notes || null,
+      consent_acknowledged: true,
+      consent_acknowledged_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     })
 

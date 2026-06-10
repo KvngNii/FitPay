@@ -36,6 +36,8 @@ export function MedicalHistoryCard({ clientId, history }: { clientId: string; hi
     ([key]) => history[key as keyof MedicalHistory]
   )
 
+  const isExpired = history.valid_until ? new Date(history.valid_until) < new Date() : false
+
   async function handleMarkReviewed() {
     setLoading(true)
     await fetch('/api/clients/medical-review', {
@@ -53,7 +55,9 @@ export function MedicalHistoryCard({ clientId, history }: { clientId: string; hi
         type="button"
         onClick={() => setOpen(!open)}
         className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg border text-left transition-colors ${
-          history.needs_medical_clearance
+          isExpired
+            ? 'bg-red-900/20 border-red-800/40'
+            : history.needs_medical_clearance
             ? history.trainer_reviewed
               ? 'bg-emerald-900/20 border-emerald-800/40'
               : 'bg-yellow-900/20 border-yellow-800/40'
@@ -61,11 +65,15 @@ export function MedicalHistoryCard({ clientId, history }: { clientId: string; hi
         }`}
       >
         <p className={`text-xs font-medium ${
-          history.needs_medical_clearance
+          isExpired
+            ? 'text-red-400'
+            : history.needs_medical_clearance
             ? history.trainer_reviewed ? 'text-emerald-400' : 'text-yellow-400'
             : 'text-slate-400'
         }`}>
-          {history.needs_medical_clearance
+          {isExpired
+            ? 'Medical clearance expired — re-screening required'
+            : history.needs_medical_clearance
             ? history.trainer_reviewed
               ? 'Medical clearance reviewed'
               : 'Needs medical review'
@@ -127,6 +135,12 @@ export function MedicalHistoryCard({ clientId, history }: { clientId: string; hi
           {history.trainer_reviewed && (
             <p className="text-emerald-400/80 text-[11px] mt-1">
               Reviewed {history.trainer_reviewed_at ? new Date(history.trainer_reviewed_at).toLocaleDateString('en-GB') : ''}
+            </p>
+          )}
+
+          {history.valid_until && (
+            <p className={`text-[11px] mt-1 ${isExpired ? 'text-red-400' : 'text-slate-500'}`}>
+              {isExpired ? 'Clearance expired' : 'Valid until'} {new Date(history.valid_until).toLocaleDateString('en-GB')}
             </p>
           )}
         </div>

@@ -44,6 +44,9 @@ export type MedicalHistory = {
   allergies: string | null
   additional_notes: string | null
   needs_medical_clearance: boolean
+  consent_acknowledged: boolean
+  consent_acknowledged_at: string | null
+  valid_until: string | null
   trainer_reviewed: boolean
   trainer_reviewed_at: string | null
   trainer_notes: string | null

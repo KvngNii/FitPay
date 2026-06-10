@@ -72,6 +72,7 @@ export default function ProfilePage() {
           current_pain_areas: history.current_pain_areas ?? '',
           allergies: history.allergies ?? '',
           additional_notes: history.additional_notes ?? '',
+          consent_acknowledged: history.consent_acknowledged,
         })
       }
 
@@ -116,6 +117,12 @@ export default function ProfilePage() {
       return
     }
 
+    if (!medical.consent_acknowledged) {
+      setError('Please confirm the declaration before saving.')
+      setSaving(false)
+      return
+    }
+
     const { error: medicalError } = await supabase.from('medical_history').upsert({
       client_id: user.id,
       heart_condition_or_bp: medical.heart_condition_or_bp,
@@ -131,6 +138,8 @@ export default function ProfilePage() {
       current_pain_areas: medical.current_pain_areas || null,
       allergies: medical.allergies || null,
       additional_notes: medical.additional_notes || null,
+      consent_acknowledged: true,
+      consent_acknowledged_at: new Date().toISOString(),
       // Re-flag for trainer review since details may have changed
       trainer_reviewed: false,
       trainer_reviewed_at: null,
