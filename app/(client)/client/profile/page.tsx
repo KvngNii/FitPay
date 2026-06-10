@@ -140,6 +140,7 @@ export default function ProfilePage() {
       additional_notes: medical.additional_notes || null,
       consent_acknowledged: true,
       consent_acknowledged_at: new Date().toISOString(),
+      valid_until: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
       // Re-flag for trainer review since details may have changed
       trainer_reviewed: false,
       trainer_reviewed_at: null,

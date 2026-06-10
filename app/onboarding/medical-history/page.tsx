@@ -51,6 +51,7 @@ export default function MedicalHistoryPage() {
       additional_notes: form.additional_notes || null,
       consent_acknowledged: true,
       consent_acknowledged_at: new Date().toISOString(),
+      valid_until: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
       updated_at: new Date().toISOString(),
     })
 
