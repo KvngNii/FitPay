@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
 
   const { data: client } = await admin
     .from('users')
-    .select('name, goal, fitness_level')
+    .select('name, goal, fitness_level, date_of_birth, gender, height_cm, weight_kg, health_notes')
     .eq('id', client_id)
     .single()
 
@@ -23,17 +23,22 @@ export async function POST(req: NextRequest) {
     general: 'general fitness',
   }
 
+  const age = client.date_of_birth
+    ? Math.floor((Date.now() - new Date(client.date_of_birth).getTime()) / (365.25 * 24 * 60 * 60 * 1000))
+    : null
+
   const prompt = `Create a starter workout plan for a new personal training client.
 
 Client:
 - Name: ${client.name}
 - Goal: ${goalLabels[client.goal ?? 'general'] ?? 'general fitness'}
 - Fitness level: ${client.fitness_level ?? 'beginner'}
+${age ? `- Age: ${age}\n` : ''}${client.gender ? `- Gender: ${client.gender}\n` : ''}${client.height_cm ? `- Height: ${client.height_cm} cm\n` : ''}${client.weight_kg ? `- Weight: ${client.weight_kg} kg\n` : ''}- Health notes / injuries: ${client.health_notes?.trim() || 'None reported'}
 
 Output ONLY a JSON array of 5 exercises for their first session. Each exercise must follow this exact shape:
 {"name": string, "sets": number, "reps": number, "weight_kg": number, "difficulty": "moderate", "notes": string}
 
-Use weight_kg of 0 for bodyweight exercises. Return ONLY the JSON array, no other text.`
+Use weight_kg of 0 for bodyweight exercises. If health notes mention any injury or condition, choose exercises that avoid aggravating it and mention the consideration in that exercise's notes. Return ONLY the JSON array, no other text.`
 
   let plan = null
   try {

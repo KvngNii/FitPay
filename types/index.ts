@@ -2,6 +2,7 @@
 export type UserRole = 'client' | 'trainer'
 export type FitnessGoal = 'weight_loss' | 'strength' | 'endurance' | 'general'
 export type FitnessLevel = 'beginner' | 'intermediate' | 'advanced'
+export type Gender = 'male' | 'female' | 'other' | 'prefer_not_to_say'
 export type PurchaseStatus = 'pending' | 'active' | 'expired' | 'refunded'
 export type SessionStatus = 'scheduled' | 'completed' | 'cancelled' | 'no_show'
 export type Difficulty = 'easy' | 'moderate' | 'hard'
@@ -17,6 +18,13 @@ export type User = {
   role: UserRole
   goal: FitnessGoal | null
   fitness_level: FitnessLevel | null
+  date_of_birth: string | null
+  gender: Gender | null
+  height_cm: number | null
+  weight_kg: number | null
+  health_notes: string | null
+  emergency_contact_name: string | null
+  emergency_contact_phone: string | null
   created_at: string
 }
 

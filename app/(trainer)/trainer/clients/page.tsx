@@ -8,7 +8,7 @@ export default async function ClientsPage() {
 
   const { data: clients } = await admin
     .from('users')
-    .select('id, name, phone, email, goal, fitness_level, created_at')
+    .select('id, name, phone, email, goal, fitness_level, health_notes, emergency_contact_name, emergency_contact_phone, created_at')
     .eq('role', 'client')
     .order('created_at', { ascending: false })
 
@@ -76,6 +76,20 @@ export default async function ClientsPage() {
                       </span>
                     )}
                   </div>
+                )}
+
+                {client.health_notes && client.health_notes.trim().toLowerCase() !== 'none' && (
+                  <div className="mt-2 px-2.5 py-1.5 rounded-lg bg-yellow-900/20 border border-yellow-800/40">
+                    <p className="text-xs text-yellow-400">
+                      <span className="font-medium">Health note:</span> {client.health_notes}
+                    </p>
+                  </div>
+                )}
+
+                {client.emergency_contact_name && (
+                  <p className="text-xs text-slate-500 mt-2">
+                    Emergency contact: {client.emergency_contact_name} · {client.emergency_contact_phone}
+                  </p>
                 )}
               </div>
             )
