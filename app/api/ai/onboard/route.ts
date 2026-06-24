@@ -8,11 +8,18 @@ export async function POST(req: NextRequest) {
 
   const admin = createAdminSupabaseClient()
 
-  const { data: client } = await admin
-    .from('users')
-    .select('name, goal, fitness_level, date_of_birth, gender, height_cm, weight_kg, health_notes')
-    .eq('id', client_id)
-    .single()
+  const [{ data: client }, { data: history }] = await Promise.all([
+    admin
+      .from('users')
+      .select('name, goal, fitness_level, date_of_birth, gender, height_cm, weight_kg')
+      .eq('id', client_id)
+      .single(),
+    admin
+      .from('medical_history')
+      .select('heart_condition_or_bp, chest_pain, dizziness_or_consciousness, chronic_condition, chronic_condition_details, prescribed_medication, medication_details, bone_or_joint_problem, bone_or_joint_details, previous_injuries_surgeries, current_pain_areas, allergies')
+      .eq('client_id', client_id)
+      .maybeSingle(),
+  ])
 
   if (!client) return NextResponse.json({ error: 'Client not found' }, { status: 404 })
 
@@ -27,13 +34,27 @@ export async function POST(req: NextRequest) {
     ? Math.floor((Date.now() - new Date(client.date_of_birth).getTime()) / (365.25 * 24 * 60 * 60 * 1000))
     : null
 
+  const medicalLines: string[] = []
+  if (history) {
+    if (history.heart_condition_or_bp) medicalLines.push('Heart condition or high blood pressure')
+    if (history.chest_pain) medicalLines.push('Chest pain at rest or during activity')
+    if (history.dizziness_or_consciousness) medicalLines.push('Dizziness / loss of consciousness (past 12 months)')
+    if (history.chronic_condition) medicalLines.push(`Chronic condition: ${history.chronic_condition_details || 'unspecified'}`)
+    if (history.prescribed_medication) medicalLines.push(`Prescribed medication: ${history.medication_details || 'unspecified'}`)
+    if (history.bone_or_joint_problem) medicalLines.push(`Bone/joint/muscle problem: ${history.bone_or_joint_details || 'unspecified'}`)
+    if (history.previous_injuries_surgeries) medicalLines.push(`Previous injuries/surgeries: ${history.previous_injuries_surgeries}`)
+    if (history.current_pain_areas) medicalLines.push(`Current pain areas: ${history.current_pain_areas}`)
+    if (history.allergies) medicalLines.push(`Allergies: ${history.allergies}`)
+  }
+  const medicalSummary = medicalLines.length > 0 ? medicalLines.join('; ') : 'None reported'
+
   const prompt = `Create a starter workout plan for a new personal training client.
 
 Client:
 - Name: ${client.name}
 - Goal: ${goalLabels[client.goal ?? 'general'] ?? 'general fitness'}
 - Fitness level: ${client.fitness_level ?? 'beginner'}
-${age ? `- Age: ${age}\n` : ''}${client.gender ? `- Gender: ${client.gender}\n` : ''}${client.height_cm ? `- Height: ${client.height_cm} cm\n` : ''}${client.weight_kg ? `- Weight: ${client.weight_kg} kg\n` : ''}- Health notes / injuries: ${client.health_notes?.trim() || 'None reported'}
+${age ? `- Age: ${age}\n` : ''}${client.gender ? `- Gender: ${client.gender}\n` : ''}${client.height_cm ? `- Height: ${client.height_cm} cm\n` : ''}${client.weight_kg ? `- Weight: ${client.weight_kg} kg\n` : ''}- Medical / injury notes: ${medicalSummary}
 
 Output ONLY a JSON array of 5 exercises for their first session. Each exercise must follow this exact shape:
 {"name": string, "sets": number, "reps": number, "weight_kg": number, "difficulty": "moderate", "notes": string}
