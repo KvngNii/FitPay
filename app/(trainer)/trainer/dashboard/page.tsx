@@ -74,11 +74,11 @@ export default async function TrainerDashboard() {
       <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">Recent Purchases</h2>
       {recentPurchases && recentPurchases.length > 0 ? (
         <div className="space-y-2">
-          {recentPurchases.map((p: any) => (
+          {recentPurchases.map((p) => (
             <div key={p.id} className="card flex items-center justify-between">
               <div>
-                <p className="font-medium text-slate-50">{(p.users as any)?.name}</p>
-                <p className="text-sm text-slate-400">{(p.packages as any)?.name} · {p.sessions_left} sessions left</p>
+                <p className="font-medium text-slate-50">{(p.users as unknown as { name: string } | null)?.name}</p>
+                <p className="text-sm text-slate-400">{(p.packages as unknown as { name: string } | null)?.name} · {p.sessions_left} sessions left</p>
               </div>
               <span className="text-xs bg-emerald-900/40 text-emerald-400 px-2 py-1 rounded-full">Active</span>
             </div>

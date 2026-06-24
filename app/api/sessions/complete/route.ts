@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient, createAdminSupabaseClient } from '@/lib/supabase/server'
-import type { ExerciseEntry } from '@/types'
 
 export async function POST(req: NextRequest) {
   const auth = createServerSupabaseClient()

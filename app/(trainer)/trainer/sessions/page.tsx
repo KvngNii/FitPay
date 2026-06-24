@@ -32,14 +32,15 @@ export default async function SessionsPage() {
   // Build bookable clients list (deduplicated — keep highest sessions_left per client)
   const clientMap = new Map<string, { id: string; name: string; sessions_left: number; package_name: string }>()
   for (const p of activePurchases ?? []) {
-    const client = p.users as any
-    const existing = clientMap.get(client?.id)
+    const client = p.users as unknown as { id: string; name: string } | null
+    if (!client?.id) continue
+    const existing = clientMap.get(client.id)
     if (!existing || p.sessions_left > existing.sessions_left) {
-      clientMap.set(client?.id, {
-        id: client?.id,
-        name: client?.name,
+      clientMap.set(client.id, {
+        id: client.id,
+        name: client.name,
         sessions_left: p.sessions_left,
-        package_name: (p.packages as any)?.name ?? '',
+        package_name: (p.packages as unknown as { name: string } | null)?.name ?? '',
       })
     }
   }
@@ -58,7 +59,7 @@ export default async function SessionsPage() {
         </h2>
         {upcoming && upcoming.length > 0 ? (
           <div className="space-y-2">
-            {upcoming.map((s: any) => <SessionCard key={s.id} session={s} />)}
+            {upcoming.map((s) => <SessionCard key={s.id} session={s as unknown as Parameters<typeof SessionCard>[0]['session']} />)}
           </div>
         ) : (
           <div className="card text-center py-6">
@@ -72,13 +73,13 @@ export default async function SessionsPage() {
         <section>
           <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">Recent</h2>
           <div className="space-y-2">
-            {recent.map((s: any) => {
+            {recent.map((s) => {
               const date = new Date(s.scheduled_at)
               const dateStr = date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
               return (
                 <div key={s.id} className="card flex items-center justify-between">
                   <div>
-                    <p className="font-medium text-slate-50">{s.users?.name}</p>
+                    <p className="font-medium text-slate-50">{(s.users as unknown as { name: string } | null)?.name}</p>
                     <p className="text-sm text-slate-400">{dateStr}</p>
                   </div>
                   <span className={`text-xs px-2 py-1 rounded-full ${

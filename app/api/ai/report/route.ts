@@ -30,10 +30,10 @@ export async function POST(req: NextRequest) {
   }
 
   const sessionSummary = (recentSessions ?? [])
-    .map((s: any, i: number) => {
-      const log = s.workout_logs
+    .map((s, i) => {
+      const log = s.workout_logs as unknown as { overall_difficulty: string; exercises: { name: string }[]; injury_flag: boolean } | null
       if (!log) return `Session ${i + 1}: no log`
-      const exerciseNames = (log.exercises ?? []).map((e: any) => e.name).join(', ')
+      const exerciseNames = (log.exercises ?? []).map((e) => e.name).join(', ')
       return `Session ${i + 1}: ${log.overall_difficulty} difficulty. Exercises: ${exerciseNames || 'none recorded'}.${log.injury_flag ? ' Injury reported.' : ''}`
     })
     .join('\n')

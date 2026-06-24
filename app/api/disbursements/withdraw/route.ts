@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
       .eq('type', 'withdrawal'),
   ])
 
-  const totalRevenue = (purchases ?? []).reduce((sum: number, p: any) => sum + Number(p.packages?.price_ghs ?? 0), 0)
+  const totalRevenue = (purchases ?? []).reduce((sum: number, p) => sum + Number((p.packages as unknown as { price_ghs: number } | null)?.price_ghs ?? 0), 0)
   const totalWithdrawn = (prevDisbursements ?? []).reduce((sum: number, d) => sum + Number(d.amount_ghs), 0)
   const available = totalRevenue - totalWithdrawn
 
@@ -105,7 +105,9 @@ export async function POST(req: NextRequest) {
 
   // txstatus: 1=Success, 0=Pending, 2=Failed, 3=Unknown
   // Per Moolre docs: never assume failure unless txstatus=2
-  const txstatus = (transferRes.data as any)?.txstatus
+  type MoolreTransferData = { txstatus?: number; receivername?: string; transactionid?: string }
+  const txdata = transferRes.data as MoolreTransferData | null
+  const txstatus = txdata?.txstatus
   const apiSuccess = String(transferRes.status) === '1'
 
   let disbursementStatus: 'success' | 'pending' | 'failed' = 'pending'
@@ -128,8 +130,8 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({
     success: true,
     amount: amountNum,
-    receiver: (transferRes.data as any)?.receivername ?? phone,
-    transactionid: (transferRes.data as any)?.transactionid,
+    receiver: txdata?.receivername ?? phone,
+    transactionid: txdata?.transactionid,
     status: disbursementStatus,
   })
 }

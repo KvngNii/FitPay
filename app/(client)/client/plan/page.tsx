@@ -71,7 +71,7 @@ export default async function PlanPage() {
           .eq('status', 'completed')
           .order('scheduled_at', { ascending: false })
           .limit(5)
-      ).data?.map((s: any) => s.id) ?? []
+      ).data?.map((s) => s.id) ?? []
     )
     .not('next_plan', 'is', null)
     .order('created_at', { ascending: false })

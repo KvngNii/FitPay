@@ -29,7 +29,7 @@ export default async function ClientsPage() {
   ])
 
   const purchaseMap = Object.fromEntries(
-    (activePurchases ?? []).map((p: any) => [p.client_id, p])
+    (activePurchases ?? []).map((p) => [p.client_id, p])
   )
 
   const medicalMap = Object.fromEntries(
@@ -71,7 +71,7 @@ export default async function ClientsPage() {
                 <div className="flex items-center gap-4 text-sm text-slate-400">
                   {purchase ? (
                     <>
-                      <span>{(purchase.packages as any)?.name}</span>
+                      <span>{(purchase.packages as unknown as { name: string } | null)?.name}</span>
                       <span>·</span>
                       <span>{purchase.sessions_left} sessions left</span>
                     </>

@@ -9,7 +9,8 @@ export async function POST(req: NextRequest) {
 
   const admin = createAdminSupabaseClient()
 
-  let clients: any[] = []
+  type ClientRow = { id: string; name: string; phone: string | null; goal: string | null }
+  let clients: ClientRow[] = []
 
   if (client_id) {
     const { data } = await admin
@@ -27,7 +28,7 @@ export async function POST(req: NextRequest) {
       .eq('status', 'active')
     const seen = new Set<string>()
     for (const p of activePurchases ?? []) {
-      const c = p.users as any
+      const c = p.users as unknown as ClientRow | null
       if (c?.id && !seen.has(c.id)) {
         seen.add(c.id)
         clients.push(c)

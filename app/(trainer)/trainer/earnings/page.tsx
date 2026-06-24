@@ -28,13 +28,13 @@ export default async function EarningsPage() {
       .single(),
   ])
 
-  const totalRevenue = (purchases ?? []).reduce((sum: number, p: any) => {
-    return sum + Number(p.packages?.price_ghs ?? 0)
+  const totalRevenue = (purchases ?? []).reduce((sum: number, p) => {
+    return sum + Number((p.packages as unknown as { price_ghs: number } | null)?.price_ghs ?? 0)
   }, 0)
 
   const totalWithdrawn = (disbursements ?? [])
-    .filter((d: any) => d.status === 'success' && d.type === 'withdrawal')
-    .reduce((sum: number, d: any) => sum + Number(d.amount_ghs), 0)
+    .filter((d) => d.status === 'success' && d.type === 'withdrawal')
+    .reduce((sum: number, d) => sum + Number(d.amount_ghs), 0)
 
   const available = totalRevenue - totalWithdrawn
 
@@ -67,15 +67,15 @@ export default async function EarningsPage() {
       <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">Package Sales</h2>
       {purchases && purchases.length > 0 ? (
         <div className="space-y-2 mb-8">
-          {purchases.map((p: any) => (
+          {purchases.map((p) => (
             <div key={p.id} className="card flex items-center justify-between">
               <div>
-                <p className="font-medium text-slate-50">{(p.users as any)?.name}</p>
+                <p className="font-medium text-slate-50">{(p.users as unknown as { name: string } | null)?.name}</p>
                 <p className="text-sm text-slate-400">
-                  {(p.packages as any)?.name} · {new Date(p.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                  {(p.packages as unknown as { name: string; price_ghs: number } | null)?.name} · {new Date(p.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
                 </p>
               </div>
-              <p className="font-semibold text-emerald-400">GH₵{(p.packages as any)?.price_ghs}</p>
+              <p className="font-semibold text-emerald-400">GH₵{(p.packages as unknown as { name: string; price_ghs: number } | null)?.price_ghs}</p>
             </div>
           ))}
         </div>
@@ -90,7 +90,7 @@ export default async function EarningsPage() {
         <>
           <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">Withdrawal History</h2>
           <div className="space-y-2">
-            {disbursements.map((d: any) => (
+            {disbursements.map((d) => (
               <div key={d.id} className="card flex items-center justify-between">
                 <div>
                   <p className="font-medium text-slate-50 capitalize">{d.type}</p>

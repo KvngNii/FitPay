@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabaseClient } from '@/lib/supabase/server'
 import { callClaude } from '@/lib/ai/claude'
+import type { ExerciseEntry } from '@/types'
 
 export async function POST(req: NextRequest) {
   const { session_id } = await req.json()
@@ -16,7 +17,7 @@ export async function POST(req: NextRequest) {
 
   if (!session) return NextResponse.json({ error: 'Session not found' }, { status: 404 })
 
-  const log = session.workout_logs as any
+  const log = session.workout_logs as unknown as { id: string; injury_notes: string | null; exercises: ExerciseEntry[] } | null
   if (!log) return NextResponse.json({ error: 'No workout log for this session' }, { status: 404 })
 
   const [{ data: client }, { data: recentSessions }] = await Promise.all([
@@ -36,10 +37,10 @@ export async function POST(req: NextRequest) {
     const { data: recentLogs } = await admin
       .from('workout_logs')
       .select('exercises, overall_difficulty')
-      .in('session_id', recentSessions.map((s: any) => s.id))
+      .in('session_id', recentSessions.map((s) => s.id))
 
     recentExercises = (recentLogs ?? [])
-      .flatMap((l: any) => (l.exercises ?? []).map((e: any) => e.name))
+      .flatMap((l) => ((l.exercises ?? []) as ExerciseEntry[]).map((e) => e.name))
       .filter((v: string, i: number, a: string[]) => a.indexOf(v) === i)
       .slice(0, 10)
       .join(', ')
