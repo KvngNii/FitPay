@@ -5,6 +5,17 @@ import { moolrePostPub, MOOLRE_ACCOUNT } from '@/lib/moolre'
 import { bookSession } from '@/lib/sessions/book'
 import type { UssdRequest, UssdResponse, ExerciseEntry, MoolrePaymentLinkData } from '@/types'
 
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+}
+
+// Preflight — needed by the Moolre browser-based USSD simulator
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: CORS_HEADERS })
+}
+
 const SESSION_TTL_MS = 3 * 60 * 1000
 
 const DAY_OPTIONS = [1, 2, 3, 4, 5]
@@ -21,8 +32,11 @@ type SessionData = {
   package_ids?: string[]
 }
 
-function reply(message: string, keepGoing: boolean): UssdResponse {
-  return { message: message.slice(0, 160), reply: keepGoing }
+function reply(message: string, keepGoing: boolean): NextResponse {
+  return NextResponse.json(
+    { message: message.slice(0, 160), reply: keepGoing } satisfies UssdResponse,
+    { headers: CORS_HEADERS }
+  )
 }
 
 // Local Ghana numbers are stored as 0XXXXXXXXX; Moolre sends msisdn as 233XXXXXXXXX.
@@ -40,7 +54,7 @@ export async function POST(req: NextRequest) {
   try {
     body = await req.json()
   } catch {
-    return NextResponse.json(reply('Invalid request.', false))
+    return reply('Invalid request.', false)
   }
 
   const sessionId = typeof body.sessionId === 'string' ? body.sessionId : ''
@@ -49,7 +63,7 @@ export async function POST(req: NextRequest) {
   const isNew = body.new === true
 
   if (!sessionId || !msisdn) {
-    return NextResponse.json(reply('Invalid request.', false))
+    return reply('Invalid request.', false)
   }
 
   const admin = createAdminSupabaseClient()
@@ -61,7 +75,7 @@ export async function POST(req: NextRequest) {
 
     if (!client) {
       const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? ''
-      return NextResponse.json(reply(`No FitPay account found for this number. Sign up at ${appUrl}/signup`, false))
+      return reply(`No FitPay account found for this number. Sign up at ${appUrl}/signup`, false)
     }
 
     await admin.from('ussd_sessions').upsert({
@@ -73,7 +87,7 @@ export async function POST(req: NextRequest) {
       expires_at: expiresAt,
     })
 
-    return NextResponse.json(reply(mainMenuText(), true))
+    return reply(mainMenuText(), true)
   }
 
   const { data: ussdSession } = await admin
@@ -83,7 +97,7 @@ export async function POST(req: NextRequest) {
     .single()
 
   if (!ussdSession || !ussdSession.client_id) {
-    return NextResponse.json(reply('Session expired. Please dial again.', false))
+    return reply('Session expired. Please dial again.', false)
   }
 
   const clientId = ussdSession.client_id
@@ -92,7 +106,7 @@ export async function POST(req: NextRequest) {
 
   async function endSession(text: string) {
     await admin.from('ussd_sessions').delete().eq('session_id', sessionId)
-    return NextResponse.json(reply(text, false))
+    return reply(text, false)
   }
 
   async function transition(nextState: string, nextData: SessionData, text: string) {
@@ -100,7 +114,7 @@ export async function POST(req: NextRequest) {
       .from('ussd_sessions')
       .update({ current_state: nextState, session_data: nextData, expires_at: expiresAt })
       .eq('session_id', sessionId)
-    return NextResponse.json(reply(text, true))
+    return reply(text, true)
   }
 
   if (state === 'main_menu') {
