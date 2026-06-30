@@ -61,12 +61,19 @@ export async function POST(req: NextRequest) {
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL!
 
-  // AI trigger: injury adaptation (non-blocking)
+  // Injury sessions get an AI safety-adapted plan; otherwise the deterministic
+  // progression engine advances next_plan (both non-blocking)
   if (injury_flag) {
     fetch(`${appUrl}/api/ai/adapt`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ session_id, client_id: session.client_id, injury_notes }),
+    }).catch(() => {})
+  } else {
+    fetch(`${appUrl}/api/engine/progress`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ session_id, client_id: session.client_id }),
     }).catch(() => {})
   }
 

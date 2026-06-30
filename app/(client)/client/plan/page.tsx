@@ -56,11 +56,10 @@ export default async function PlanPage() {
     .eq('client_id', user.id)
     .single()
 
-  // Look for the most recent AI-adapted next_plan from injury sessions
-  const { data: latestAdapted } = await admin
+  // Look for the most recent next_plan — from injury adaptation or routine progression
+  const { data: latestLog } = await admin
     .from('workout_logs')
-    .select('next_plan, created_at')
-    .eq('ai_generated', true)
+    .select('next_plan, ai_generated, created_at')
     .in(
       'session_id',
       (
@@ -78,10 +77,11 @@ export default async function PlanPage() {
     .limit(1)
     .single()
 
-  const adaptedPlan = latestAdapted?.next_plan as ExerciseEntry[] | null
+  const latestPlan = latestLog?.next_plan as ExerciseEntry[] | null
+  const isAdapted = latestLog?.ai_generated === true
   const initialPlan = rule?.initial_plan as ExerciseEntry[] | null
 
-  const hasPlan = adaptedPlan || initialPlan
+  const hasPlan = latestPlan || initialPlan
 
   return (
     <main className="p-4 max-w-lg mx-auto">
@@ -100,18 +100,18 @@ export default async function PlanPage() {
         </div>
       )}
 
-      {adaptedPlan && adaptedPlan.length > 0 && (
+      {isAdapted && latestPlan && latestPlan.length > 0 && (
         <div className="mb-4 px-3 py-2 rounded-lg bg-yellow-900/20 border border-yellow-800/40">
           <p className="text-xs text-yellow-400 font-medium">Injury-adapted plan — modified to keep you safe</p>
         </div>
       )}
 
-      {adaptedPlan && adaptedPlan.length > 0 && (
-        <ExerciseList exercises={adaptedPlan} label="Next Session (Adapted)" />
-      )}
-
-      {!adaptedPlan && initialPlan && initialPlan.length > 0 && (
-        <ExerciseList exercises={initialPlan} label="Your Starter Plan" />
+      {latestPlan && latestPlan.length > 0 ? (
+        <ExerciseList exercises={latestPlan} label={isAdapted ? 'Next Session (Adapted)' : 'Next Session'} />
+      ) : (
+        initialPlan && initialPlan.length > 0 && (
+          <ExerciseList exercises={initialPlan} label="Your Starter Plan" />
+        )
       )}
     </main>
   )
