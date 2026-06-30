@@ -1,4 +1,5 @@
 import { createAdminSupabaseClient } from '@/lib/supabase/server'
+import { CalendarClock, History } from 'lucide-react'
 import BookSessionForm from './BookSessionForm'
 import { SessionCard } from './SessionActions'
 
@@ -48,13 +49,14 @@ export default async function SessionsPage() {
 
   return (
     <main className="p-4 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold text-emerald-400 mb-5">Sessions</h1>
+      <h1 className="text-2xl font-bold glow-text mb-5 animate-fade-in-up">Sessions</h1>
 
       <BookSessionForm clients={bookableClients} />
 
       {/* Upcoming */}
       <section className="mb-8">
-        <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">
+        <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+          <CalendarClock size={14} />
           Upcoming ({upcoming?.length ?? 0})
         </h2>
         {upcoming && upcoming.length > 0 ? (
@@ -63,6 +65,7 @@ export default async function SessionsPage() {
           </div>
         ) : (
           <div className="card text-center py-6">
+            <CalendarClock size={24} className="mx-auto text-slate-600 mb-2" />
             <p className="text-slate-400 text-sm">No upcoming sessions.</p>
           </div>
         )}
@@ -71,7 +74,10 @@ export default async function SessionsPage() {
       {/* Recent */}
       {recent && recent.length > 0 && (
         <section>
-          <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">Recent</h2>
+          <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+            <History size={14} />
+            Recent
+          </h2>
           <div className="space-y-2">
             {recent.map((s) => {
               const date = new Date(s.scheduled_at)
@@ -82,10 +88,10 @@ export default async function SessionsPage() {
                     <p className="font-medium text-slate-50">{(s.users as unknown as { name: string } | null)?.name}</p>
                     <p className="text-sm text-slate-400">{dateStr}</p>
                   </div>
-                  <span className={`text-xs px-2 py-1 rounded-full ${
-                    s.status === 'completed' ? 'bg-emerald-900/40 text-emerald-400' :
-                    s.status === 'cancelled' ? 'bg-red-900/40 text-red-400' :
-                    'bg-slate-800 text-slate-400'
+                  <span className={`text-xs px-2 py-1 rounded-full border ${
+                    s.status === 'completed' ? 'bg-emerald-900/40 text-emerald-400 border-emerald-500/20' :
+                    s.status === 'cancelled' ? 'bg-red-900/40 text-red-400 border-red-500/20' :
+                    'bg-slate-800 text-slate-400 border-slate-700'
                   }`}>
                     {s.status}
                   </span>

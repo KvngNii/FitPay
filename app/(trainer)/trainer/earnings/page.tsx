@@ -1,4 +1,5 @@
 import { createAdminSupabaseClient, createServerSupabaseClient } from '@/lib/supabase/server'
+import { TrendingUp, Wallet, CircleDollarSign, Receipt } from 'lucide-react'
 import WithdrawForm from './WithdrawForm'
 import RefundButton from './RefundButton'
 
@@ -39,24 +40,25 @@ export default async function EarningsPage() {
 
   const available = totalRevenue - totalWithdrawn
 
+  const summaryStats = [
+    { label: 'Total earned', value: totalRevenue, Icon: TrendingUp, highlight: true },
+    { label: 'Withdrawn', value: totalWithdrawn, Icon: Wallet, highlight: false },
+    { label: 'Available', value: available, Icon: CircleDollarSign, highlight: true },
+  ]
+
   return (
     <main className="p-4 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold text-emerald-400 mb-5">Earnings</h1>
+      <h1 className="text-2xl font-bold glow-text mb-5 animate-fade-in-up">Earnings</h1>
 
       {/* Summary */}
       <div className="grid grid-cols-3 gap-3 mb-6">
-        <div className="card text-center">
-          <p className="text-xl font-bold text-emerald-400">GH₵{totalRevenue}</p>
-          <p className="text-xs text-slate-400 mt-1">Total earned</p>
-        </div>
-        <div className="card text-center">
-          <p className="text-xl font-bold text-slate-50">GH₵{totalWithdrawn}</p>
-          <p className="text-xs text-slate-400 mt-1">Withdrawn</p>
-        </div>
-        <div className="card text-center">
-          <p className="text-xl font-bold text-emerald-400">GH₵{available}</p>
-          <p className="text-xs text-slate-400 mt-1">Available</p>
-        </div>
+        {summaryStats.map((s, i) => (
+          <div key={s.label} className="stat-card animate-scale-in" style={{ animationDelay: `${i * 75}ms` }}>
+            <s.Icon size={16} className={`mx-auto mb-1.5 ${s.highlight ? 'text-emerald-400' : 'text-slate-400'}`} />
+            <p className={`text-xl font-bold ${s.highlight ? 'glow-text' : 'text-slate-50'}`}>GH₵{s.value}</p>
+            <p className="text-xs text-slate-400 mt-1">{s.label}</p>
+          </div>
+        ))}
       </div>
 
       {/* Withdraw button */}
@@ -65,7 +67,10 @@ export default async function EarningsPage() {
       </div>
 
       {/* Package sales */}
-      <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">Package Sales</h2>
+      <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+        <Receipt size={14} />
+        Package Sales
+      </h2>
       {purchases && purchases.length > 0 ? (
         <div className="space-y-2 mb-8">
           {purchases.map((p) => {
@@ -79,13 +84,14 @@ export default async function EarningsPage() {
                   </p>
                   <RefundButton purchaseId={p.id} amount={price} />
                 </div>
-                <p className="font-semibold text-emerald-400">GH₵{price}</p>
+                <p className="font-semibold glow-text">GH₵{price}</p>
               </div>
             )
           })}
         </div>
       ) : (
         <div className="card text-center py-6 mb-8">
+          <Receipt size={24} className="mx-auto text-slate-600 mb-2" />
           <p className="text-slate-400 text-sm">No sales yet.</p>
         </div>
       )}
@@ -93,7 +99,10 @@ export default async function EarningsPage() {
       {/* Withdrawal history */}
       {disbursements && disbursements.length > 0 && (
         <>
-          <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">Transaction History</h2>
+          <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+            <Wallet size={14} />
+            Transaction History
+          </h2>
           <div className="space-y-2">
             {disbursements.map((d) => (
               <div key={d.id} className="card flex items-center justify-between">
@@ -105,10 +114,10 @@ export default async function EarningsPage() {
                 </div>
                 <div className="text-right">
                   <p className="font-semibold text-slate-50">GH₵{d.amount_ghs}</p>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${
-                    d.status === 'success' ? 'bg-emerald-900/40 text-emerald-400' :
-                    d.status === 'failed' ? 'bg-red-900/40 text-red-400' :
-                    'bg-slate-800 text-slate-400'
+                  <span className={`text-xs px-2 py-0.5 rounded-full border ${
+                    d.status === 'success' ? 'bg-emerald-900/40 text-emerald-400 border-emerald-500/20' :
+                    d.status === 'failed' ? 'bg-red-900/40 text-red-400 border-red-500/20' :
+                    'bg-slate-800 text-slate-400 border-slate-700'
                   }`}>{d.status}</span>
                 </div>
               </div>

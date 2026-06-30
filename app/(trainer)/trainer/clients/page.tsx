@@ -1,4 +1,5 @@
 import { createAdminSupabaseClient } from '@/lib/supabase/server'
+import { UserCircle2 } from 'lucide-react'
 import { MedicalHistoryCard } from './MedicalHistoryCard'
 import type { MedicalHistory } from '@/types'
 
@@ -43,26 +44,33 @@ export default async function ClientsPage() {
 
   return (
     <main className="p-4 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold text-emerald-400 mb-1">Clients</h1>
+      <h1 className="text-2xl font-bold glow-text mb-1 animate-fade-in-up">Clients</h1>
       <p className="text-slate-400 text-sm mb-5">{clients?.length ?? 0} registered</p>
 
       {clients && clients.length > 0 ? (
         <div className="space-y-3">
-          {clients.map((client) => {
+          {clients.map((client, i) => {
             const purchase = purchaseMap[client.id]
             return (
-              <div key={client.id} className="card">
+              <div
+                key={client.id}
+                className="card animate-fade-in-up"
+                style={{ animationDelay: `${i * 40}ms` }}
+              >
                 <div className="flex items-start justify-between mb-2">
-                  <div>
-                    <p className="font-semibold text-slate-50">{client.name}</p>
-                    <p className="text-sm text-slate-400">{client.phone}</p>
+                  <div className="flex items-center gap-2.5">
+                    <div className="shrink-0 w-9 h-9 rounded-full bg-gradient-to-br from-emerald-500/20 to-teal-400/10 border border-emerald-500/20 flex items-center justify-center">
+                      <UserCircle2 size={18} className="text-emerald-400" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-slate-50">{client.name}</p>
+                      <p className="text-sm text-slate-400">{client.phone}</p>
+                    </div>
                   </div>
                   {purchase ? (
-                    <span className="text-xs bg-emerald-900/40 text-emerald-400 px-2 py-1 rounded-full shrink-0">
-                      Active
-                    </span>
+                    <span className="badge-active shrink-0">Active</span>
                   ) : (
-                    <span className="text-xs bg-slate-800 text-slate-500 px-2 py-1 rounded-full shrink-0">
+                    <span className="text-xs bg-slate-800 text-slate-500 px-2 py-1 rounded-full border border-slate-700 shrink-0">
                       No package
                     </span>
                   )}
@@ -83,17 +91,17 @@ export default async function ClientsPage() {
                 {(client.goal || calcAge(client.date_of_birth)) && (
                   <div className="mt-2 flex gap-2 flex-wrap">
                     {client.goal && (
-                      <span className="text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full capitalize">
+                      <span className="text-xs bg-slate-800/80 text-slate-400 px-2 py-0.5 rounded-full border border-slate-700 capitalize">
                         {client.goal.replace('_', ' ')}
                       </span>
                     )}
                     {client.fitness_level && (
-                      <span className="text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full capitalize">
+                      <span className="text-xs bg-slate-800/80 text-slate-400 px-2 py-0.5 rounded-full border border-slate-700 capitalize">
                         {client.fitness_level}
                       </span>
                     )}
                     {calcAge(client.date_of_birth) !== null && (
-                      <span className="text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full">
+                      <span className="text-xs bg-slate-800/80 text-slate-400 px-2 py-0.5 rounded-full border border-slate-700">
                         {calcAge(client.date_of_birth)} yrs
                       </span>
                     )}
@@ -113,6 +121,7 @@ export default async function ClientsPage() {
         </div>
       ) : (
         <div className="card text-center py-10">
+          <UserCircle2 size={32} className="mx-auto text-slate-600 mb-2" />
           <p className="text-slate-400">No clients yet.</p>
           <p className="text-slate-500 text-sm mt-1">Share your signup link to get started.</p>
         </div>

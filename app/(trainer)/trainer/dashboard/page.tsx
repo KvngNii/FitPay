@@ -1,5 +1,6 @@
 import { createAdminSupabaseClient } from '@/lib/supabase/server'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { Users, CalendarCheck, TrendingUp, PackageOpen, Sparkles } from 'lucide-react'
 import SignOutButton from './SignOutButton'
 
 export const dynamic = 'force-dynamic'
@@ -44,11 +45,20 @@ export default async function TrainerDashboard() {
     .eq('id', user!.id)
     .single()
 
+  const stats = [
+    { label: 'Active clients', value: activeClients ?? 0, Icon: Users },
+    { label: 'Upcoming', value: upcomingSessions ?? 0, Icon: CalendarCheck },
+    { label: 'Done this month', value: completedThisMonth ?? 0, Icon: TrendingUp },
+  ]
+
   return (
     <main className="p-4 max-w-2xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 animate-fade-in-up">
         <div>
-          <h1 className="text-2xl font-bold text-emerald-400">Dashboard</h1>
+          <h1 className="text-2xl font-bold glow-text flex items-center gap-2">
+            Dashboard
+            <Sparkles size={18} className="text-emerald-400 animate-pulse-glow" />
+          </h1>
           <p className="text-sm text-slate-400">Welcome back, {trainer?.name?.split(' ')[0]}</p>
         </div>
         <SignOutButton />
@@ -56,36 +66,40 @@ export default async function TrainerDashboard() {
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3 mb-6">
-        <div className="card text-center">
-          <p className="text-2xl font-bold text-emerald-400">{activeClients ?? 0}</p>
-          <p className="text-xs text-slate-400 mt-1">Active clients</p>
-        </div>
-        <div className="card text-center">
-          <p className="text-2xl font-bold text-emerald-400">{upcomingSessions ?? 0}</p>
-          <p className="text-xs text-slate-400 mt-1">Upcoming</p>
-        </div>
-        <div className="card text-center">
-          <p className="text-2xl font-bold text-emerald-400">{completedThisMonth ?? 0}</p>
-          <p className="text-xs text-slate-400 mt-1">Done this month</p>
-        </div>
+        {stats.map((s, i) => (
+          <div
+            key={s.label}
+            className="stat-card animate-scale-in"
+            style={{ animationDelay: `${i * 75}ms` }}
+          >
+            <s.Icon size={18} className="mx-auto text-emerald-400 mb-1.5" />
+            <p className="text-2xl font-bold glow-text">{s.value}</p>
+            <p className="text-xs text-slate-400 mt-1">{s.label}</p>
+          </div>
+        ))}
       </div>
 
       {/* Recent purchases */}
       <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">Recent Purchases</h2>
       {recentPurchases && recentPurchases.length > 0 ? (
         <div className="space-y-2">
-          {recentPurchases.map((p) => (
-            <div key={p.id} className="card flex items-center justify-between">
+          {recentPurchases.map((p, i) => (
+            <div
+              key={p.id}
+              className="card flex items-center justify-between animate-fade-in-up"
+              style={{ animationDelay: `${i * 50}ms` }}
+            >
               <div>
                 <p className="font-medium text-slate-50">{(p.users as unknown as { name: string } | null)?.name}</p>
                 <p className="text-sm text-slate-400">{(p.packages as unknown as { name: string } | null)?.name} · {p.sessions_left} sessions left</p>
               </div>
-              <span className="text-xs bg-emerald-900/40 text-emerald-400 px-2 py-1 rounded-full">Active</span>
+              <span className="badge-active">Active</span>
             </div>
           ))}
         </div>
       ) : (
         <div className="card text-center py-8">
+          <PackageOpen size={28} className="mx-auto text-slate-600 mb-2" />
           <p className="text-slate-400 text-sm">No active packages yet.</p>
         </div>
       )}

@@ -4,6 +4,14 @@ import Link from 'next/link'
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { ShoppingBag, CalendarPlus, Dumbbell, LineChart, ChevronRight, Zap } from 'lucide-react'
+
+const NAV_ITEMS = [
+  { href: '/client/packages', label: 'Buy a Package', desc: 'Browse session packages', Icon: ShoppingBag },
+  { href: '/client/book', label: 'Book a Session', desc: 'Schedule your next workout', Icon: CalendarPlus },
+  { href: '/client/plan', label: 'My Plan', desc: 'View your workout plan', Icon: Dumbbell },
+  { href: '/client/progress', label: 'Progress', desc: 'Track your results', Icon: LineChart },
+]
 
 export default function ClientDashboard() {
   const router = useRouter()
@@ -33,8 +41,11 @@ export default function ClientDashboard() {
 
   return (
     <main className="p-4 max-w-lg mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-emerald-400">FitPay</h1>
+      <div className="flex items-center justify-between mb-6 animate-fade-in-up">
+        <h1 className="text-2xl font-bold glow-text flex items-center gap-2">
+          FitPay
+          <Zap size={18} className="text-emerald-400 animate-pulse-glow" />
+        </h1>
         <div className="flex items-center gap-4">
           <Link href="/client/profile" className="text-sm text-slate-400 hover:text-slate-200 transition-colors">
             Profile
@@ -49,45 +60,25 @@ export default function ClientDashboard() {
       </div>
 
       <div className="space-y-3">
-        <Link href="/client/packages" className="card flex items-center justify-between hover:border-emerald-500/40 transition-colors">
-          <div>
-            <p className="font-semibold text-slate-50">Buy a Package</p>
-            <p className="text-sm text-slate-400 mt-0.5">Browse session packages</p>
-          </div>
-          <svg className="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-          </svg>
-        </Link>
-
-        <Link href="/client/book" className="card flex items-center justify-between hover:border-emerald-500/40 transition-colors">
-          <div>
-            <p className="font-semibold text-slate-50">Book a Session</p>
-            <p className="text-sm text-slate-400 mt-0.5">Schedule your next workout</p>
-          </div>
-          <svg className="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-          </svg>
-        </Link>
-
-        <Link href="/client/plan" className="card flex items-center justify-between hover:border-emerald-500/40 transition-colors">
-          <div>
-            <p className="font-semibold text-slate-50">My Plan</p>
-            <p className="text-sm text-slate-400 mt-0.5">View your workout plan</p>
-          </div>
-          <svg className="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-          </svg>
-        </Link>
-
-        <Link href="/client/progress" className="card flex items-center justify-between hover:border-emerald-500/40 transition-colors">
-          <div>
-            <p className="font-semibold text-slate-50">Progress</p>
-            <p className="text-sm text-slate-400 mt-0.5">Track your results</p>
-          </div>
-          <svg className="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-          </svg>
-        </Link>
+        {NAV_ITEMS.map(({ href, label, desc, Icon }, i) => (
+          <Link
+            key={href}
+            href={href}
+            className="card-interactive flex items-center justify-between animate-fade-in-up"
+            style={{ animationDelay: `${i * 60}ms` }}
+          >
+            <div className="flex items-center gap-3">
+              <div className="shrink-0 w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-500/20 to-teal-400/10 border border-emerald-500/20 flex items-center justify-center">
+                <Icon size={18} className="text-emerald-400" />
+              </div>
+              <div>
+                <p className="font-semibold text-slate-50">{label}</p>
+                <p className="text-sm text-slate-400 mt-0.5">{desc}</p>
+              </div>
+            </div>
+            <ChevronRight size={18} className="text-slate-500" />
+          </Link>
+        ))}
       </div>
     </main>
   )
