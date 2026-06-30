@@ -1,5 +1,6 @@
 import { createAdminSupabaseClient, createServerSupabaseClient } from '@/lib/supabase/server'
 import WithdrawForm from './WithdrawForm'
+import RefundButton from './RefundButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -67,17 +68,21 @@ export default async function EarningsPage() {
       <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">Package Sales</h2>
       {purchases && purchases.length > 0 ? (
         <div className="space-y-2 mb-8">
-          {purchases.map((p) => (
-            <div key={p.id} className="card flex items-center justify-between">
-              <div>
-                <p className="font-medium text-slate-50">{(p.users as unknown as { name: string } | null)?.name}</p>
-                <p className="text-sm text-slate-400">
-                  {(p.packages as unknown as { name: string; price_ghs: number } | null)?.name} · {new Date(p.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
-                </p>
+          {purchases.map((p) => {
+            const price = (p.packages as unknown as { name: string; price_ghs: number } | null)?.price_ghs ?? 0
+            return (
+              <div key={p.id} className="card flex items-center justify-between">
+                <div>
+                  <p className="font-medium text-slate-50">{(p.users as unknown as { name: string } | null)?.name}</p>
+                  <p className="text-sm text-slate-400">
+                    {(p.packages as unknown as { name: string; price_ghs: number } | null)?.name} · {new Date(p.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                  </p>
+                  <RefundButton purchaseId={p.id} amount={price} />
+                </div>
+                <p className="font-semibold text-emerald-400">GH₵{price}</p>
               </div>
-              <p className="font-semibold text-emerald-400">GH₵{(p.packages as unknown as { name: string; price_ghs: number } | null)?.price_ghs}</p>
-            </div>
-          ))}
+            )
+          })}
         </div>
       ) : (
         <div className="card text-center py-6 mb-8">
@@ -88,7 +93,7 @@ export default async function EarningsPage() {
       {/* Withdrawal history */}
       {disbursements && disbursements.length > 0 && (
         <>
-          <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">Withdrawal History</h2>
+          <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">Transaction History</h2>
           <div className="space-y-2">
             {disbursements.map((d) => (
               <div key={d.id} className="card flex items-center justify-between">
