@@ -53,7 +53,7 @@ export default function MedicalHistoryPage() {
       consent_acknowledged_at: new Date().toISOString(),
       valid_until: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
       updated_at: new Date().toISOString(),
-    })
+    }, { onConflict: 'client_id' })
 
     if (insertError) {
       setError(insertError.message)

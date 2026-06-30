@@ -145,7 +145,7 @@ export default function ProfilePage() {
       trainer_reviewed: false,
       trainer_reviewed_at: null,
       updated_at: new Date().toISOString(),
-    })
+    }, { onConflict: 'client_id' })
 
     if (medicalError) {
       setError(medicalError.message)
