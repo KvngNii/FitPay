@@ -8,9 +8,25 @@ export async function POST(req: NextRequest) {
 
   const admin = createAdminSupabaseClient()
   const { data: profile } = await admin.from('users').select('role').eq('id', user.id).single()
-  if (profile?.role !== 'trainer') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  if (!profile) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
-  const { client_id, scheduled_at, notes } = await req.json()
+  const body = await req.json()
+  const { scheduled_at, notes } = body
+
+  let client_id: string
+  let trainer_id: string
+
+  if (profile.role === 'trainer') {
+    client_id = body.client_id
+    trainer_id = user.id
+  } else {
+    // Clients can only book for themselves
+    client_id = user.id
+    const { data: trainer } = await admin.from('users').select('id').eq('role', 'trainer').limit(1).single()
+    if (!trainer) return NextResponse.json({ error: 'No trainer available' }, { status: 500 })
+    trainer_id = trainer.id
+  }
+
   if (!client_id || !scheduled_at) {
     return NextResponse.json({ error: 'client_id and scheduled_at are required' }, { status: 400 })
   }
@@ -30,12 +46,25 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Client has no active package with sessions remaining' }, { status: 400 })
   }
 
+  // Prevent double-booking the same slot
+  const { data: clash } = await admin
+    .from('sessions')
+    .select('id')
+    .eq('scheduled_at', scheduled_at)
+    .eq('status', 'scheduled')
+    .limit(1)
+    .maybeSingle()
+
+  if (clash) {
+    return NextResponse.json({ error: 'That time slot is already booked' }, { status: 400 })
+  }
+
   // Insert session
   const { data: session, error: sessionError } = await admin
     .from('sessions')
     .insert({
       client_id,
-      trainer_id: user.id,
+      trainer_id,
       purchase_id: purchase.id,
       scheduled_at,
       status: 'scheduled',
