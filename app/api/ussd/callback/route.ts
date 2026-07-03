@@ -60,13 +60,10 @@ export async function POST(req: NextRequest) {
   const sessionId = typeof body.sessionId === 'string' ? body.sessionId : ''
   const msisdn = typeof body.msisdn === 'string' ? body.msisdn : ''
   const message = typeof body.message === 'string' ? body.message.trim() : ''
-  const isNew = body.new === true || body.new === 'true'
-
-  // DEBUG: remove after diagnosing real-phone payload
-  console.log('USSD body:', JSON.stringify(body))
+  const isNew = body.new === true || body.new === 'true' || body.new === 1
 
   if (!sessionId || !msisdn) {
-    return reply(`Invalid req. new=${JSON.stringify(body.new)} sid=${sessionId}`, false)
+    return reply('Invalid request.', false)
   }
 
   const admin = createAdminSupabaseClient()
@@ -105,7 +102,7 @@ export async function POST(req: NextRequest) {
     .single()
 
   if (!ussdSession || !ussdSession.client_id) {
-    return reply(`Expired. new=${JSON.stringify(body.new)} isNew=${isNew}`, false)
+    return reply('Session expired. Please dial again.', false)
   }
 
   const clientId = ussdSession.client_id
