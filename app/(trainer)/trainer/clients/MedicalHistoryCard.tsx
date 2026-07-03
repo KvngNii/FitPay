@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import type { MedicalHistory } from '@/types'
+import { markMedicalReviewed } from './actions'
 
 const PAR_Q_LABELS: Record<string, string> = {
   heart_condition_or_bp: 'Heart condition or high blood pressure',
@@ -43,20 +44,15 @@ export function MedicalHistoryCard({ clientId, history }: { clientId: string; hi
     setLoading(true)
     setReviewError(null)
     try {
-      const res = await fetch('/api/clients/medical-review', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ client_id: clientId }),
-      })
-      const data = await res.json()
-      if (res.ok && data.trainer_reviewed === true) {
+      const result = await markMedicalReviewed(clientId)
+      if (result.success) {
         setReviewed(true)
         setReviewedAt(new Date().toISOString())
       } else {
-        setReviewError(data.error ?? 'Could not save review. Try again.')
+        setReviewError(result.error ?? 'Could not save review. Try again.')
       }
-    } catch {
-      setReviewError('Network error. Try again.')
+    } catch (err) {
+      setReviewError(err instanceof Error ? err.message : 'Unexpected error. Try again.')
     } finally {
       setLoading(false)
     }
