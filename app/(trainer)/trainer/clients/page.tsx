@@ -10,7 +10,7 @@ export default async function ClientsPage() {
 
   const { data: clients } = await admin
     .from('users')
-    .select('id, name, phone, email, goal, fitness_level, date_of_birth, emergency_contact_name, emergency_contact_phone, created_at')
+    .select('id, name, phone, email, goal, fitness_level, date_of_birth, emergency_contact_name, emergency_contact_phone, avatar_url, created_at')
     .eq('role', 'client')
     .order('created_at', { ascending: false })
 
@@ -59,8 +59,18 @@ export default async function ClientsPage() {
               >
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex items-center gap-2.5">
-                    <div className="shrink-0 w-9 h-9 rounded-full bg-gradient-to-br from-emerald-500/20 to-teal-400/10 border border-emerald-500/20 flex items-center justify-center">
-                      <UserCircle2 size={18} className="text-emerald-400" />
+                    <div className="shrink-0 w-9 h-9 rounded-full overflow-hidden bg-gradient-to-br from-emerald-500/20 to-teal-400/10 border border-emerald-500/20 flex items-center justify-center">
+                      {(client as { avatar_url?: string | null }).avatar_url ? (
+                        <img
+                          src={(client as { avatar_url?: string | null }).avatar_url!}
+                          alt={client.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-sm font-bold text-emerald-400">
+                          {client.name.charAt(0).toUpperCase()}
+                        </span>
+                      )}
                     </div>
                     <div>
                       <p className="font-semibold text-slate-50">{client.name}</p>
