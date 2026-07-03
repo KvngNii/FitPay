@@ -24,6 +24,7 @@ export type User = {
   weight_kg: number | null
   emergency_contact_name: string | null
   emergency_contact_phone: string | null
+  avatar_url: string | null
   created_at: string
 }
 

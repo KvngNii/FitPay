@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import type { MedicalHistory } from '@/types'
 
 const PAR_Q_LABELS: Record<string, string> = {
@@ -20,9 +19,10 @@ const DETAIL_FIELDS: Record<string, keyof MedicalHistory> = {
 }
 
 export function MedicalHistoryCard({ clientId, history }: { clientId: string; history: MedicalHistory | null }) {
-  const router = useRouter()
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [reviewed, setReviewed] = useState(history?.trainer_reviewed ?? false)
+  const [reviewedAt, setReviewedAt] = useState(history?.trainer_reviewed_at ?? null)
 
   if (!history) {
     return (
@@ -40,45 +40,48 @@ export function MedicalHistoryCard({ clientId, history }: { clientId: string; hi
 
   async function handleMarkReviewed() {
     setLoading(true)
-    await fetch('/api/clients/medical-review', {
+    const res = await fetch('/api/clients/medical-review', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ client_id: clientId }),
     })
     setLoading(false)
-    router.refresh()
+    if (res.ok) {
+      setReviewed(true)
+      setReviewedAt(new Date().toISOString())
+    }
   }
+
+  const statusColor = isExpired
+    ? 'bg-red-900/20 border-red-800/40'
+    : history.needs_medical_clearance
+    ? reviewed
+      ? 'bg-emerald-900/20 border-emerald-800/40'
+      : 'bg-yellow-900/20 border-yellow-800/40'
+    : 'bg-slate-800 border-slate-700'
+
+  const statusText = isExpired
+    ? 'Medical clearance expired — re-screening required'
+    : history.needs_medical_clearance
+    ? reviewed
+      ? 'Medical clearance reviewed'
+      : 'Needs medical review'
+    : 'Medical history: no concerns flagged'
+
+  const statusTextColor = isExpired
+    ? 'text-red-400'
+    : history.needs_medical_clearance
+    ? reviewed ? 'text-emerald-400' : 'text-yellow-400'
+    : 'text-slate-400'
 
   return (
     <div className="mt-2">
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg border text-left transition-colors ${
-          isExpired
-            ? 'bg-red-900/20 border-red-800/40'
-            : history.needs_medical_clearance
-            ? history.trainer_reviewed
-              ? 'bg-emerald-900/20 border-emerald-800/40'
-              : 'bg-yellow-900/20 border-yellow-800/40'
-            : 'bg-slate-800 border-slate-700'
-        }`}
+        className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg border text-left transition-colors ${statusColor}`}
       >
-        <p className={`text-xs font-medium ${
-          isExpired
-            ? 'text-red-400'
-            : history.needs_medical_clearance
-            ? history.trainer_reviewed ? 'text-emerald-400' : 'text-yellow-400'
-            : 'text-slate-400'
-        }`}>
-          {isExpired
-            ? 'Medical clearance expired — re-screening required'
-            : history.needs_medical_clearance
-            ? history.trainer_reviewed
-              ? 'Medical clearance reviewed'
-              : 'Needs medical review'
-            : 'Medical history: no concerns flagged'}
-        </p>
+        <p className={`text-xs font-medium ${statusTextColor}`}>{statusText}</p>
         <svg
           className={`w-4 h-4 text-slate-500 transition-transform shrink-0 ${open ? 'rotate-180' : ''}`}
           fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
@@ -122,19 +125,19 @@ export function MedicalHistoryCard({ clientId, history }: { clientId: string; hi
             <p><span className="font-medium text-slate-200">Additional notes:</span> {history.additional_notes}</p>
           )}
 
-          {history.needs_medical_clearance && !history.trainer_reviewed && (
+          {history.needs_medical_clearance && !reviewed && (
             <button
               type="button"
               onClick={handleMarkReviewed}
               disabled={loading}
-              className="mt-2 text-xs text-emerald-400 hover:text-emerald-300 transition-colors disabled:opacity-50"
+              className="mt-2 text-xs bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/20 transition-colors px-3 py-1.5 rounded-lg disabled:opacity-50"
             >
-              {loading ? 'Saving…' : 'Mark as reviewed'}
+              {loading ? 'Saving...' : 'Mark as reviewed'}
             </button>
           )}
-          {history.trainer_reviewed && (
+          {reviewed && (
             <p className="text-emerald-400/80 text-[11px] mt-1">
-              Reviewed {history.trainer_reviewed_at ? new Date(history.trainer_reviewed_at).toLocaleDateString('en-GB') : ''}
+              Reviewed {reviewedAt ? new Date(reviewedAt).toLocaleDateString('en-GB') : ''}
             </p>
           )}
 

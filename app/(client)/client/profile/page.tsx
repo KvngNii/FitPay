@@ -2,10 +2,11 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { MedicalHistoryFields, EMPTY_MEDICAL_HISTORY, type MedicalHistoryFormState } from '@/components/MedicalHistoryFields'
+import { Camera } from 'lucide-react'
 import type { FitnessGoal, FitnessLevel, Gender } from '@/types'
 
 export default function ProfilePage() {
@@ -24,6 +25,11 @@ export default function ProfilePage() {
   const [emergencyContactName, setEmergencyContactName] = useState('')
   const [emergencyContactPhone, setEmergencyContactPhone] = useState('')
   const [medical, setMedical] = useState<MedicalHistoryFormState>(EMPTY_MEDICAL_HISTORY)
+
+  const [currentAvatarUrl, setCurrentAvatarUrl] = useState<string | null>(null)
+  const [avatarFile, setAvatarFile] = useState<File | null>(null)
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
@@ -55,6 +61,7 @@ export default function ProfilePage() {
         setWeightKg(profile.weight_kg != null ? String(profile.weight_kg) : '')
         setEmergencyContactName(profile.emergency_contact_name ?? '')
         setEmergencyContactPhone(profile.emergency_contact_phone ?? '')
+        setCurrentAvatarUrl((profile as { avatar_url?: string | null }).avatar_url ?? null)
       }
 
       if (history) {
@@ -81,6 +88,13 @@ export default function ProfilePage() {
     load()
   }, [router])
 
+  function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setAvatarFile(file)
+    setAvatarPreview(URL.createObjectURL(file))
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
@@ -93,6 +107,24 @@ export default function ProfilePage() {
       setError('You must be signed in to continue.')
       setSaving(false)
       return
+    }
+
+    // Upload avatar if a new one was selected
+    let newAvatarUrl = currentAvatarUrl
+    if (avatarFile) {
+      const ext = avatarFile.name.split('.').pop() ?? 'jpg'
+      const filePath = `${user.id}/avatar.${ext}`
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, avatarFile, { upsert: true })
+
+      if (!uploadError) {
+        const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(filePath)
+        newAvatarUrl = publicUrl
+        setCurrentAvatarUrl(publicUrl)
+        setAvatarFile(null)
+        setAvatarPreview(null)
+      }
     }
 
     const { error: profileError } = await supabase
@@ -108,6 +140,7 @@ export default function ProfilePage() {
         weight_kg: weightKg ? Number(weightKg) : null,
         emergency_contact_name: emergencyContactName || null,
         emergency_contact_phone: emergencyContactPhone || null,
+        avatar_url: newAvatarUrl,
       })
       .eq('id', user.id)
 
@@ -141,7 +174,6 @@ export default function ProfilePage() {
       consent_acknowledged: true,
       consent_acknowledged_at: new Date().toISOString(),
       valid_until: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
-      // Re-flag for trainer review since details may have changed
       trainer_reviewed: false,
       trainer_reviewed_at: null,
       updated_at: new Date().toISOString(),
@@ -161,18 +193,50 @@ export default function ProfilePage() {
   if (loadingData) {
     return (
       <main className="p-4 max-w-lg mx-auto">
-        <p className="text-slate-400 text-sm">Loading…</p>
+        <p className="text-slate-400 text-sm">Loading...</p>
       </main>
     )
   }
 
+  const displayAvatar = avatarPreview ?? currentAvatarUrl
+  const initials = name.trim().split(' ').map((n) => n[0]).slice(0, 2).join('').toUpperCase()
+
   return (
     <main className="p-4 max-w-lg mx-auto pb-10">
-      <h1 className="text-2xl font-bold text-emerald-400 mb-5">Edit Profile</h1>
+      <h1 className="text-2xl font-bold glow-text mb-6">Edit Profile</h1>
 
       <form onSubmit={handleSubmit} className="space-y-4">
+
+        {/* Avatar */}
+        <div className="flex flex-col items-center mb-2">
+          <div className="relative">
+            <div className="w-24 h-24 rounded-full overflow-hidden bg-gradient-to-br from-emerald-500/20 to-teal-400/10 border-2 border-emerald-500/30 flex items-center justify-center shadow-lg shadow-emerald-500/10">
+              {displayAvatar ? (
+                <img src={displayAvatar} alt="Profile photo" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-2xl font-bold text-emerald-400">{initials || '?'}</span>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="absolute -bottom-1 -right-1 w-8 h-8 bg-emerald-500 hover:bg-emerald-400 transition-colors rounded-full flex items-center justify-center shadow-md shadow-emerald-500/30"
+            >
+              <Camera size={14} className="text-slate-950" />
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleAvatarChange}
+            />
+          </div>
+          <p className="text-xs text-slate-500 mt-3">Tap camera to change photo</p>
+        </div>
+
         <div className="pt-1">
-          <p className="text-sm font-semibold text-slate-300 mb-1">Personal details</p>
+          <p className="text-sm font-semibold text-slate-300 mb-3">Personal details</p>
         </div>
 
         <div>
@@ -209,22 +273,16 @@ export default function ProfilePage() {
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label htmlFor="height">Height (cm)</label>
-            <input
-              id="height" type="number" min="50" max="250" step="0.1"
-              value={heightCm} onChange={(e) => setHeightCm(e.target.value)} required
-            />
+            <input id="height" type="number" min="50" max="250" step="0.1" value={heightCm} onChange={(e) => setHeightCm(e.target.value)} required />
           </div>
           <div>
             <label htmlFor="weight">Weight (kg)</label>
-            <input
-              id="weight" type="number" min="20" max="300" step="0.1"
-              value={weightKg} onChange={(e) => setWeightKg(e.target.value)} required
-            />
+            <input id="weight" type="number" min="20" max="300" step="0.1" value={weightKg} onChange={(e) => setWeightKg(e.target.value)} required />
           </div>
         </div>
 
         <div className="pt-2 border-t border-slate-800">
-          <p className="text-sm font-semibold text-slate-300 mt-3 mb-1">Training profile</p>
+          <p className="text-sm font-semibold text-slate-300 mt-3 mb-3">Training profile</p>
         </div>
 
         <div>
@@ -247,7 +305,7 @@ export default function ProfilePage() {
         </div>
 
         <div className="pt-2 border-t border-slate-800">
-          <p className="text-sm font-semibold text-slate-300 mt-3 mb-1">Emergency contact</p>
+          <p className="text-sm font-semibold text-slate-300 mt-3 mb-3">Emergency contact</p>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
@@ -263,7 +321,7 @@ export default function ProfilePage() {
 
         <div className="pt-2 border-t border-slate-800">
           <p className="text-sm font-semibold text-slate-300 mt-3 mb-1">Medical history</p>
-          <p className="text-xs text-slate-500 mb-2">
+          <p className="text-xs text-slate-500 mb-3">
             Updating this will flag your profile for your trainer to review again.
           </p>
         </div>
@@ -274,7 +332,7 @@ export default function ProfilePage() {
         {success && <p className="text-emerald-400 text-sm text-center">Profile updated.</p>}
 
         <button type="submit" className="btn-primary" disabled={saving}>
-          {saving ? 'Saving…' : 'Save changes'}
+          {saving ? 'Saving...' : 'Save changes'}
         </button>
       </form>
     </main>

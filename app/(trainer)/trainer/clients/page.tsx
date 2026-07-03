@@ -76,12 +76,13 @@ export default async function ClientsPage() {
                   )}
                 </div>
 
-                <div className="flex items-center gap-4 text-sm text-slate-400">
+                <div className="flex items-center gap-3 text-sm text-slate-400">
                   {purchase ? (
                     <>
                       <span>{(purchase.packages as unknown as { name: string } | null)?.name}</span>
-                      <span>·</span>
-                      <span>{purchase.sessions_left} sessions left</span>
+                      <span className="text-xs bg-slate-800/80 text-slate-500 px-2 py-0.5 rounded-full border border-slate-700">
+                        {purchase.sessions_left} left
+                      </span>
                     </>
                   ) : (
                     <span>No active package</span>
@@ -111,9 +112,10 @@ export default async function ClientsPage() {
                 <MedicalHistoryCard clientId={client.id} history={medicalMap[client.id] ?? null} />
 
                 {client.emergency_contact_name && (
-                  <p className="text-xs text-slate-500 mt-2">
-                    Emergency contact: {client.emergency_contact_name} · {client.emergency_contact_phone}
-                  </p>
+                  <div className="mt-2">
+                    <p className="text-xs text-slate-500">Emergency: {client.emergency_contact_name}</p>
+                    <p className="text-xs text-slate-600">{client.emergency_contact_phone}</p>
+                  </div>
                 )}
               </div>
             )

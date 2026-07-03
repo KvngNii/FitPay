@@ -1,6 +1,6 @@
 import { createAdminSupabaseClient } from '@/lib/supabase/server'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
-import { Users, CalendarCheck, TrendingUp, PackageOpen, Sparkles } from 'lucide-react'
+import { Users, CalendarCheck, TrendingUp, PackageOpen } from 'lucide-react'
 import SignOutButton from './SignOutButton'
 
 export const dynamic = 'force-dynamic'
@@ -55,10 +55,7 @@ export default async function TrainerDashboard() {
     <main className="p-4 max-w-2xl mx-auto">
       <div className="flex items-center justify-between mb-6 animate-fade-in-up">
         <div>
-          <h1 className="text-2xl font-bold glow-text flex items-center gap-2">
-            Dashboard
-            <Sparkles size={18} className="text-emerald-400 animate-pulse-glow" />
-          </h1>
+          <h1 className="text-2xl font-bold glow-text">Dashboard</h1>
           <p className="text-sm text-slate-400">Welcome back, {trainer?.name?.split(' ')[0]}</p>
         </div>
         <SignOutButton />
@@ -91,7 +88,8 @@ export default async function TrainerDashboard() {
             >
               <div>
                 <p className="font-medium text-slate-50">{(p.users as unknown as { name: string } | null)?.name}</p>
-                <p className="text-sm text-slate-400">{(p.packages as unknown as { name: string } | null)?.name} · {p.sessions_left} sessions left</p>
+                <p className="text-sm text-slate-400">{(p.packages as unknown as { name: string } | null)?.name}</p>
+                <p className="text-xs text-slate-500">{p.sessions_left} sessions left</p>
               </div>
               <span className="badge-active">Active</span>
             </div>
