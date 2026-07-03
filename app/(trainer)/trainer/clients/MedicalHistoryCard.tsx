@@ -23,6 +23,7 @@ export function MedicalHistoryCard({ clientId, history }: { clientId: string; hi
   const [loading, setLoading] = useState(false)
   const [reviewed, setReviewed] = useState(history?.trainer_reviewed ?? false)
   const [reviewedAt, setReviewedAt] = useState(history?.trainer_reviewed_at ?? null)
+  const [reviewError, setReviewError] = useState<string | null>(null)
 
   if (!history) {
     return (
@@ -40,15 +41,24 @@ export function MedicalHistoryCard({ clientId, history }: { clientId: string; hi
 
   async function handleMarkReviewed() {
     setLoading(true)
-    const res = await fetch('/api/clients/medical-review', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ client_id: clientId }),
-    })
-    setLoading(false)
-    if (res.ok) {
-      setReviewed(true)
-      setReviewedAt(new Date().toISOString())
+    setReviewError(null)
+    try {
+      const res = await fetch('/api/clients/medical-review', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ client_id: clientId }),
+      })
+      const data = await res.json()
+      if (res.ok && data.trainer_reviewed === true) {
+        setReviewed(true)
+        setReviewedAt(new Date().toISOString())
+      } else {
+        setReviewError(data.error ?? 'Could not save review. Try again.')
+      }
+    } catch {
+      setReviewError('Network error. Try again.')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -126,14 +136,19 @@ export function MedicalHistoryCard({ clientId, history }: { clientId: string; hi
           )}
 
           {history.needs_medical_clearance && !reviewed && (
-            <button
-              type="button"
-              onClick={handleMarkReviewed}
-              disabled={loading}
-              className="mt-2 text-xs bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/20 transition-colors px-3 py-1.5 rounded-lg disabled:opacity-50"
-            >
-              {loading ? 'Saving...' : 'Mark as reviewed'}
-            </button>
+            <div className="mt-2">
+              <button
+                type="button"
+                onClick={handleMarkReviewed}
+                disabled={loading}
+                className="text-xs bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/20 transition-colors px-3 py-1.5 rounded-lg disabled:opacity-50"
+              >
+                {loading ? 'Saving...' : 'Mark as reviewed'}
+              </button>
+              {reviewError && (
+                <p className="text-red-400 text-[11px] mt-1.5">{reviewError}</p>
+              )}
+            </div>
           )}
           {reviewed && (
             <p className="text-emerald-400/80 text-[11px] mt-1">
