@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
 
     if (upsertError) {
       console.error('USSD session upsert error:', JSON.stringify(upsertError))
-      return reply('Service error. Please try again.', false)
+      return reply(`ERR: ${upsertError.code} ${upsertError.message}`.slice(0, 160), false)
     }
 
     return reply(mainMenuText(), true)
