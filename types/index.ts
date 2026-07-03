@@ -150,7 +150,7 @@ export type MoolreResponse<T = unknown> = {
 // USSD request — what Moolre POSTs to /api/ussd/callback
 export type UssdRequest = {
   sessionId: string
-  new: boolean       // true = first dial-in (no user input yet)
+  new: boolean | string  // true/false or "true"/"false" — real phones send string
   msisdn: string     // caller's phone number e.g. "233241235993"
   network: number    // 3=MTN, 5=AT, 6=Telecel
   message: string    // what the user typed at this step
