@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { MedicalHistoryFields, EMPTY_MEDICAL_HISTORY, type MedicalHistoryFormState } from '@/components/MedicalHistoryFields'
+import Image from 'next/image'
 import { Camera } from 'lucide-react'
 import type { FitnessGoal, FitnessLevel, Gender } from '@/types'
 
@@ -210,9 +211,16 @@ export default function ProfilePage() {
         {/* Avatar */}
         <div className="flex flex-col items-center mb-2">
           <div className="relative">
-            <div className="w-24 h-24 rounded-full overflow-hidden bg-gradient-to-br from-emerald-500/20 to-teal-400/10 border-2 border-emerald-500/30 flex items-center justify-center shadow-lg shadow-emerald-500/10">
+            <div className="relative w-24 h-24 rounded-full overflow-hidden bg-gradient-to-br from-emerald-500/20 to-teal-400/10 border-2 border-emerald-500/30 flex items-center justify-center shadow-lg shadow-emerald-500/10">
               {displayAvatar ? (
-                <img src={displayAvatar} alt="Profile photo" className="w-full h-full object-cover" />
+                <Image
+                  src={displayAvatar}
+                  alt="Profile photo"
+                  fill
+                  className="object-cover"
+                  sizes="96px"
+                  unoptimized={displayAvatar.startsWith('blob:')}
+                />
               ) : (
                 <span className="text-2xl font-bold text-emerald-400">{initials || '?'}</span>
               )}

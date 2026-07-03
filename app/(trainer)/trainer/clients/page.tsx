@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import { createAdminSupabaseClient } from '@/lib/supabase/server'
 import { UserCircle2 } from 'lucide-react'
 import { MedicalHistoryCard } from './MedicalHistoryCard'
@@ -59,12 +60,14 @@ export default async function ClientsPage() {
               >
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex items-center gap-2.5">
-                    <div className="shrink-0 w-9 h-9 rounded-full overflow-hidden bg-gradient-to-br from-emerald-500/20 to-teal-400/10 border border-emerald-500/20 flex items-center justify-center">
+                    <div className="relative shrink-0 w-9 h-9 rounded-full overflow-hidden bg-gradient-to-br from-emerald-500/20 to-teal-400/10 border border-emerald-500/20 flex items-center justify-center">
                       {(client as { avatar_url?: string | null }).avatar_url ? (
-                        <img
+                        <Image
                           src={(client as { avatar_url?: string | null }).avatar_url!}
                           alt={client.name}
-                          className="w-full h-full object-cover"
+                          fill
+                          className="object-cover"
+                          sizes="36px"
                         />
                       ) : (
                         <span className="text-sm font-bold text-emerald-400">
