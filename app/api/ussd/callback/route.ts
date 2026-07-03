@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
   const sessionId = typeof body.sessionId === 'string' ? body.sessionId : ''
   const msisdn = typeof body.msisdn === 'string' ? body.msisdn : ''
   const message = typeof body.message === 'string' ? body.message.trim() : ''
-  const isNew = body.new === true
+  const isNew = body.new === true || body.new === 'true'
 
   if (!sessionId || !msisdn) {
     return reply('Invalid request.', false)
@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
 
     if (upsertError) {
       console.error('USSD session upsert error:', JSON.stringify(upsertError))
-      return reply(`ERR: ${upsertError.code} ${upsertError.message}`.slice(0, 160), false)
+      return reply('Service error. Please try again.', false)
     }
 
     return reply(mainMenuText(), true)
