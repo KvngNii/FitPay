@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
       return reply(`No FitPay account found for this number. Sign up at ${appUrl}/signup`, false)
     }
 
-    await admin.from('ussd_sessions').upsert({
+    const { error: upsertError } = await admin.from('ussd_sessions').upsert({
       session_id: sessionId,
       phone,
       client_id: client.id,
@@ -86,6 +86,11 @@ export async function POST(req: NextRequest) {
       session_data: {},
       expires_at: expiresAt,
     })
+
+    if (upsertError) {
+      console.error('USSD session upsert error:', JSON.stringify(upsertError))
+      return reply('Service error. Please try again.', false)
+    }
 
     return reply(mainMenuText(), true)
   }
