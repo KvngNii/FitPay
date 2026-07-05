@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { randomUUID } from 'crypto'
+import { waitUntil } from '@vercel/functions'
 import { createAdminSupabaseClient } from '@/lib/supabase/server'
 import { moolrePostPub, moolreSms, MOOLRE_ACCOUNT } from '@/lib/moolre'
 import { bookSession } from '@/lib/sessions/book'
@@ -336,20 +337,19 @@ export async function POST(req: NextRequest) {
       return endSession('Could not start payment. Try again later.')
     }
 
+    // Send SMS after the USSD response is returned — avoids the 5-second telco timeout.
+    // waitUntil keeps the Vercel function alive until the SMS call completes.
     if (client.phone) {
       const senderid = process.env.MOOLRE_SENDER_ID ?? 'FitPay'
-      // Keep prefix short so the URL is never truncated — a broken link is worse than no message
       const smsMsg = `FitPay payment link: ${moolreRes.data.authorization_url}`.slice(0, 160)
-      try {
-        await moolreSms({
+      const smsRecipient = toInternationalPhone(client.phone)
+      waitUntil(
+        moolreSms({
           type: 1,
           senderid,
-          messages: [{ recipient: toInternationalPhone(client.phone), message: smsMsg }],
-        })
-      } catch (smsErr) {
-        // Non-fatal: USSD response still tells user to check SMS
-        console.error('USSD SMS send failed:', smsErr)
-      }
+          messages: [{ recipient: smsRecipient, message: smsMsg }],
+        }).catch((err) => console.error('USSD SMS send failed:', err))
+      )
     }
 
     return endSession('Payment link sent via SMS. Complete payment to activate your sessions.')
