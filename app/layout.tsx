@@ -6,14 +6,22 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
 export const metadata: Metadata = {
   title: 'FitPay',
-  description: 'Personal trainer client management and payment platform',
+  description: 'Session management and payments for personal trainers in Ghana',
   manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'FitPay',
+  },
+  icons: {
+    apple: '/icons/apple-touch-icon.png',
+  },
 }
 
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#0f172a',
+  themeColor: '#0fdc82',
 }
 
 export default function RootLayout({
