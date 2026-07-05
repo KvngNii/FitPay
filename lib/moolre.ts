@@ -86,8 +86,18 @@ export async function moolreSms<T = unknown>(
     },
     body: JSON.stringify(body),
   })
-  if (!res.ok) throw new Error(`Moolre SMS HTTP ${res.status}`)
-  return res.json() as Promise<MoolreResponse<T>>
+
+  const rawText = await res.text()
+  console.log('[moolreSms] status:', res.status, 'body:', rawText)
+
+  if (!res.ok) throw new Error(`Moolre SMS HTTP ${res.status}: ${rawText}`)
+
+  const json = JSON.parse(rawText) as MoolreResponse<T>
+  // Moolre returns HTTP 200 even for application-level errors (e.g. ASMS07 unapproved sender ID)
+  if (json.status !== 1) {
+    throw new Error(`Moolre SMS error ${json.code ?? 'unknown'}: ${json.message ?? rawText}`)
+  }
+  return json
 }
 
 export const MOOLRE_ACCOUNT = process.env.MOOLRE_ACCOUNT_NUMBER!
