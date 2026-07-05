@@ -70,15 +70,15 @@ export async function moolrePostPub<T = unknown>(
   return JSON.parse(rawText) as MoolreResponse<T>
 }
 
-// Use for: SMS sending (requires VAS key, separate from main keys)
+// Use for: SMS sending (requires VAS key, separate from main keys).
+// SMS always uses production keys — sandbox mode does not deliver real messages
+// to real phones, so there is no meaningful sandbox for SMS.
 export async function moolreSms<T = unknown>(
   body: Record<string, unknown>
 ): Promise<MoolreResponse<T>> {
-  const vasKey = IS_SANDBOX
-    ? process.env.MOOLRE_SANDBOX_VAS_KEY!
-    : process.env.MOOLRE_VAS_KEY!
+  const vasKey = process.env.MOOLRE_VAS_KEY!
 
-  const res = await fetch(`${BASE_URL}/open/sms/send`, {
+  const res = await fetch('https://api.moolre.com/open/sms/send', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
