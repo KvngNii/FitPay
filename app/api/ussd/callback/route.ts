@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { randomUUID } from 'crypto'
 import { createAdminSupabaseClient } from '@/lib/supabase/server'
-import { moolrePostPub, MOOLRE_ACCOUNT } from '@/lib/moolre'
+import { moolrePostPub, moolreSms, MOOLRE_ACCOUNT } from '@/lib/moolre'
 import { bookSession } from '@/lib/sessions/book'
 import type { UssdRequest, UssdResponse, ExerciseEntry, MoolrePaymentLinkData } from '@/types'
 
@@ -43,6 +43,12 @@ function reply(message: string, keepGoing: boolean): NextResponse {
 function toLocalPhone(msisdn: string): string {
   const digits = msisdn.replace(/\D/g, '')
   return digits.startsWith('233') ? `0${digits.slice(3)}` : digits
+}
+
+// Moolre SMS API expects international format 233XXXXXXXXX.
+function toInternationalPhone(local: string): string {
+  const digits = local.replace(/\D/g, '')
+  return digits.startsWith('0') ? `233${digits.slice(1)}` : digits
 }
 
 function mainMenuText(): string {
@@ -331,14 +337,19 @@ export async function POST(req: NextRequest) {
     }
 
     if (client.phone) {
-      fetch(`${appUrl}/api/sms/send`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          to: client.phone,
-          message: `Complete your FitPay payment: ${moolreRes.data.authorization_url}`.slice(0, 160),
-        }),
-      }).catch(() => {})
+      const senderid = process.env.MOOLRE_SENDER_ID ?? 'FitPay'
+      // Keep prefix short so the URL is never truncated — a broken link is worse than no message
+      const smsMsg = `FitPay payment link: ${moolreRes.data.authorization_url}`.slice(0, 160)
+      try {
+        await moolreSms({
+          type: 1,
+          senderid,
+          messages: [{ recipient: toInternationalPhone(client.phone), message: smsMsg }],
+        })
+      } catch (smsErr) {
+        // Non-fatal: USSD response still tells user to check SMS
+        console.error('USSD SMS send failed:', smsErr)
+      }
     }
 
     return endSession('Payment link sent via SMS. Complete payment to activate your sessions.')
