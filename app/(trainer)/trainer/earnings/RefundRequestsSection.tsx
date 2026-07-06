@@ -16,6 +16,7 @@ type RefundRequest = {
   packageName: string
   amount: number
   network: string
+  sessionsRequested: number
   status: 'pending' | 'approved' | 'rejected'
   requestedAt: string
   resolvedAt: string | null
@@ -108,8 +109,10 @@ function PendingCard({ request }: { request: RefundRequest }) {
           <p className="font-semibold text-slate-50">{request.clientName}</p>
           <p className="text-sm text-slate-400">{request.packageName}</p>
           <p className="text-xs text-slate-500 mt-0.5">
-            {NETWORKS[request.network] ?? request.network} · Requested{' '}
-            {new Date(request.requestedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+            {request.sessionsRequested} session{request.sessionsRequested !== 1 ? 's' : ''} · {NETWORKS[request.network] ?? request.network}
+          </p>
+          <p className="text-xs text-slate-600 mt-0.5">
+            Requested {new Date(request.requestedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
           </p>
         </div>
         <div className="text-right shrink-0 ml-3">

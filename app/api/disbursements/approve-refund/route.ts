@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
 
   const { data: refundReq } = await admin
     .from('refund_requests')
-    .select('id, purchase_id, client_id, amount_ghs, network, status')
+    .select('id, purchase_id, client_id, amount_ghs, network, status, sessions_requested')
     .eq('id', request_id)
     .single()
 
@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
 
   const { data: purchase } = await admin
     .from('purchases')
-    .select('id, status')
+    .select('id, status, sessions_left')
     .eq('id', refundReq.purchase_id)
     .single()
 
@@ -117,20 +117,27 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: msg }, { status: 400 })
   }
 
-  // Mark request approved and purchase refunded atomically-ish
+  // Deduct the refunded sessions; only mark fully refunded if none remain
+  const sessionsRequested = Number(refundReq.sessions_requested ?? 1)
+  const newSessionsLeft = Math.max(0, purchase.sessions_left - sessionsRequested)
+  const purchaseUpdate = newSessionsLeft === 0
+    ? { sessions_left: 0, status: 'refunded' as const }
+    : { sessions_left: newSessionsLeft }
+
   const now = new Date().toISOString()
   await Promise.all([
     admin.from('refund_requests').update({ status: 'approved', resolved_at: now }).eq('id', request_id),
-    admin.from('purchases').update({ status: 'refunded', sessions_left: 0 }).eq('id', refundReq.purchase_id),
+    admin.from('purchases').update(purchaseUpdate).eq('id', refundReq.purchase_id),
   ])
 
+  const sessionWord = sessionsRequested === 1 ? 'session' : 'sessions'
   const appUrl = process.env.NEXT_PUBLIC_APP_URL!
   fetch(`${appUrl}/api/sms/send`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       to: client.phone,
-      message: `Hi ${client.name}, your FitPay refund of GH₵${amountNum} has been approved and is on its way to your mobile money. - FitPay`,
+      message: `Hi ${client.name}, your FitPay refund of GH₵${amountNum} for ${sessionsRequested} ${sessionWord} has been approved and is on its way to your mobile money. - FitPay`,
     }),
   }).catch(() => {})
 

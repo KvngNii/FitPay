@@ -26,7 +26,7 @@ export default async function PackagesPage({ searchParams }: Props) {
     user
       ? admin
           .from('purchases')
-          .select('id, status, sessions_left, created_at, packages(name, price_ghs)')
+          .select('id, status, sessions_left, created_at, packages(name, price_ghs, sessions)')
           .eq('client_id', user.id)
           .in('status', ['active', 'expired'])
           .order('created_at', { ascending: false })
@@ -35,7 +35,7 @@ export default async function PackagesPage({ searchParams }: Props) {
     user
       ? admin
           .from('refund_requests')
-          .select('id, purchase_id, amount_ghs, network, status, requested_at, purchases(packages(name))')
+          .select('id, purchase_id, amount_ghs, network, sessions_requested, status, requested_at, purchases(packages(name))')
           .eq('client_id', user.id)
           .order('requested_at', { ascending: false })
           .limit(20)
@@ -53,13 +53,14 @@ export default async function PackagesPage({ searchParams }: Props) {
 
   // Purchases eligible for a new refund request: active, not already blocked
   const eligiblePurchases = (myPurchases ?? [])
-    .filter((p) => p.status === 'active' && !blockedPurchaseIds.has(p.id))
+    .filter((p) => p.status === 'active' && !blockedPurchaseIds.has(p.id) && p.sessions_left > 0)
     .map((p) => {
-      const pkg = p.packages as unknown as { name: string; price_ghs: number } | null
+      const pkg = p.packages as unknown as { name: string; price_ghs: number; sessions: number } | null
       return {
         id: p.id,
         packageName: pkg?.name ?? 'Package',
-        amount: Number(pkg?.price_ghs ?? 0),
+        fullPrice: Number(pkg?.price_ghs ?? 0),
+        totalSessions: pkg?.sessions ?? 1,
         sessionsLeft: p.sessions_left,
       }
     })
@@ -70,6 +71,7 @@ export default async function PackagesPage({ searchParams }: Props) {
       id: r.id,
       packageName: pkgName,
       amount: Number(r.amount_ghs),
+      sessionsRequested: r.sessions_requested ?? 1,
       network: r.network,
       status: r.status as 'pending' | 'approved' | 'rejected',
       requestedAt: r.requested_at,

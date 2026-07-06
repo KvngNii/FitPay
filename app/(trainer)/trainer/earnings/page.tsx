@@ -30,7 +30,7 @@ export default async function EarningsPage() {
       .single(),
     admin
       .from('refund_requests')
-      .select('id, purchase_id, client_id, amount_ghs, network, status, requested_at, resolved_at, users!client_id(name), purchases!purchase_id(packages(name))')
+      .select('id, purchase_id, client_id, amount_ghs, network, sessions_requested, status, requested_at, resolved_at, users!client_id(name), purchases!purchase_id(packages(name))')
       .order('requested_at', { ascending: false })
       .limit(50),
   ])
@@ -60,6 +60,7 @@ export default async function EarningsPage() {
       packageName: pkgName,
       amount: Number(r.amount_ghs),
       network: r.network,
+      sessionsRequested: r.sessions_requested ?? 1,
       status: r.status as 'pending' | 'approved' | 'rejected',
       requestedAt: r.requested_at,
       resolvedAt: r.resolved_at ?? null,
