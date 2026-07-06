@@ -1,7 +1,7 @@
 import { createAdminSupabaseClient, createServerSupabaseClient } from '@/lib/supabase/server'
-import { TrendingUp, Wallet, CircleDollarSign, Receipt } from 'lucide-react'
+import { TrendingUp, Wallet, CircleDollarSign, Receipt, RotateCcw } from 'lucide-react'
 import WithdrawForm from './WithdrawForm'
-import RefundButton from './RefundButton'
+import RefundRequestsSection from './RefundRequestsSection'
 
 export const dynamic = 'force-dynamic'
 
@@ -11,7 +11,7 @@ export default async function EarningsPage() {
 
   const admin = createAdminSupabaseClient()
 
-  const [{ data: purchases }, { data: disbursements }, { data: trainer }] = await Promise.all([
+  const [{ data: purchases }, { data: disbursements }, { data: trainer }, { data: rawRefundRequests }] = await Promise.all([
     admin
       .from('purchases')
       .select('id, created_at, status, packages(name, price_ghs), users!client_id(name)')
@@ -28,6 +28,11 @@ export default async function EarningsPage() {
       .select('phone')
       .eq('id', user!.id)
       .single(),
+    admin
+      .from('refund_requests')
+      .select('id, purchase_id, client_id, amount_ghs, network, status, requested_at, resolved_at, users!client_id(name), purchases!purchase_id(packages(name))')
+      .order('requested_at', { ascending: false })
+      .limit(50),
   ])
 
   const totalRevenue = (purchases ?? []).reduce((sum: number, p) => {
@@ -46,6 +51,23 @@ export default async function EarningsPage() {
     { label: 'Available', value: available, Icon: CircleDollarSign, highlight: true },
   ]
 
+  const refundRequests = (rawRefundRequests ?? []).map((r) => {
+    const clientName = (r.users as unknown as { name: string } | null)?.name ?? 'Unknown client'
+    const pkgName = (r.purchases as unknown as { packages: { name: string } | null } | null)?.packages?.name ?? 'Package'
+    return {
+      id: r.id,
+      clientName,
+      packageName: pkgName,
+      amount: Number(r.amount_ghs),
+      network: r.network,
+      status: r.status as 'pending' | 'approved' | 'rejected',
+      requestedAt: r.requested_at,
+      resolvedAt: r.resolved_at ?? null,
+    }
+  })
+
+  const pendingCount = refundRequests.filter((r) => r.status === 'pending').length
+
   return (
     <main className="p-4 max-w-2xl mx-auto">
       <h1 className="text-2xl font-bold glow-text mb-5 animate-fade-in-up">Earnings</h1>
@@ -61,7 +83,7 @@ export default async function EarningsPage() {
         ))}
       </div>
 
-      {/* Withdraw button */}
+      {/* Withdraw */}
       <div className="mb-8">
         <WithdrawForm available={available} defaultPhone={trainer?.phone ?? ''} />
       </div>
@@ -80,9 +102,10 @@ export default async function EarningsPage() {
                 <div>
                   <p className="font-medium text-slate-50">{(p.users as unknown as { name: string } | null)?.name}</p>
                   <p className="text-sm text-slate-400">
-                    {(p.packages as unknown as { name: string; price_ghs: number } | null)?.name} · {new Date(p.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                    {(p.packages as unknown as { name: string; price_ghs: number } | null)?.name}
+                    {' · '}
+                    {new Date(p.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
                   </p>
-                  <RefundButton purchaseId={p.id} amount={price} />
                 </div>
                 <p className="font-semibold glow-text">GH₵{price}</p>
               </div>
@@ -96,14 +119,14 @@ export default async function EarningsPage() {
         </div>
       )}
 
-      {/* Withdrawal history */}
+      {/* Transaction history */}
       {disbursements && disbursements.length > 0 && (
         <>
           <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
             <Wallet size={14} />
             Transaction History
           </h2>
-          <div className="space-y-2">
+          <div className="space-y-2 mb-8">
             {disbursements.map((d) => (
               <div key={d.id} className="card flex items-center justify-between">
                 <div>
@@ -125,6 +148,20 @@ export default async function EarningsPage() {
           </div>
         </>
       )}
+
+      {/* Refund requests — separate section */}
+      <div className="border-t border-slate-800 pt-8">
+        <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+          <RotateCcw size={14} />
+          Refund Requests
+          {pendingCount > 0 && (
+            <span className="ml-1 bg-amber-500/20 text-amber-400 border border-amber-500/30 text-xs px-2 py-0.5 rounded-full">
+              {pendingCount} pending
+            </span>
+          )}
+        </h2>
+        <RefundRequestsSection requests={refundRequests} />
+      </div>
     </main>
   )
 }

@@ -8,6 +8,7 @@ export type SessionStatus = 'scheduled' | 'completed' | 'cancelled' | 'no_show'
 export type Difficulty = 'easy' | 'moderate' | 'hard'
 export type DisbursementType = 'withdrawal' | 'refund'
 export type DisbursementStatus = 'pending' | 'success' | 'failed'
+export type RefundRequestStatus = 'pending' | 'approved' | 'rejected'
 
 // Database tables
 export type User = {
@@ -127,6 +128,17 @@ export type Disbursement = {
   moolre_ref: string | null
   status: DisbursementStatus
   created_at: string
+}
+
+export type RefundRequest = {
+  id: string
+  purchase_id: string
+  client_id: string
+  amount_ghs: number
+  network: string
+  status: RefundRequestStatus
+  requested_at: string
+  resolved_at: string | null
 }
 
 export type UssdSession = {
