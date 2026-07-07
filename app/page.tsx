@@ -27,7 +27,6 @@ export default function LandingPage() {
       <header className="topbar">
         <div className="wrap topbar-inner">
           <a className="logo" href="#top">Fit<em>Pay</em></a>
-          <span className="top-code">any phone · <strong>*919*4012#</strong> · no app needed</span>
         </div>
       </header>
 
