@@ -47,7 +47,7 @@ const QUICK_ACTIONS = [
   { href: '/client/plan', label: 'My Plan', desc: 'Your next workout', Icon: Dumbbell },
   { href: '/client/progress', label: 'Progress', desc: 'Track your results', Icon: LineChart },
   { href: '/client/packages', label: 'Packages', desc: 'Buy or manage', Icon: ShoppingBag },
-  { href: '/client/book', label: 'Book', desc: 'Schedule a session', Icon: CalendarPlus },
+  { href: '/client/calendar', label: 'Book', desc: 'Schedule a session', Icon: CalendarPlus },
 ]
 
 export default async function ClientDashboard() {
@@ -136,7 +136,7 @@ export default async function ClientDashboard() {
             </p>
           </div>
           <Link
-            href={sessionsLeft > 0 ? '/client/book' : '/client/packages'}
+            href={sessionsLeft > 0 ? '/client/calendar' : '/client/packages'}
             className="btn-primary !w-auto px-5 py-2.5 text-sm shrink-0"
           >
             {sessionsLeft > 0 ? 'Book now' : 'Buy sessions'}
@@ -147,7 +147,7 @@ export default async function ClientDashboard() {
       {/* Next session + this-month stat */}
       <div className="grid grid-cols-2 gap-3 mb-6">
         <Link
-          href="/client/book"
+          href="/client/calendar"
           className="card-interactive animate-fade-in-up"
           style={{ animationDelay: '120ms' }}
         >

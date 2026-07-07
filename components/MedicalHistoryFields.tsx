@@ -79,9 +79,13 @@ function YesNoQuestion({
 export function MedicalHistoryFields({
   value,
   onChange,
+  consentLocked = false,
 }: {
   value: MedicalHistoryFormState
   onChange: (v: MedicalHistoryFormState) => void
+  // When true, the physical activity clearance has already been signed and
+  // cannot be un-signed (checkbox is locked checked).
+  consentLocked?: boolean
 }) {
   function set<K extends keyof MedicalHistoryFormState>(key: K, val: MedicalHistoryFormState[K]) {
     onChange({ ...value, [key]: val })
@@ -213,16 +217,23 @@ export function MedicalHistoryFields({
       </div>
 
       <div className="pt-2 border-t border-slate-800">
-        <label className="flex items-start gap-3 cursor-pointer pt-3">
+        <label className={`flex items-start gap-3 pt-3 ${consentLocked ? 'cursor-default' : 'cursor-pointer'}`}>
           <input
             type="checkbox"
-            checked={value.consent_acknowledged}
-            onChange={(e) => set('consent_acknowledged', e.target.checked)}
+            checked={consentLocked ? true : value.consent_acknowledged}
+            onChange={(e) => { if (!consentLocked) set('consent_acknowledged', e.target.checked) }}
             required
-            className="w-4 h-4 mt-0.5 rounded accent-emerald-500 shrink-0"
+            disabled={consentLocked}
+            aria-readonly={consentLocked}
+            className="w-4 h-4 mt-0.5 rounded accent-emerald-500 shrink-0 disabled:opacity-100"
           />
           <span className="text-xs text-slate-400 leading-relaxed">{CONSENT_TEXT}</span>
         </label>
+        {consentLocked && (
+          <p className="text-xs text-emerald-400/80 mt-2 pl-7">
+            Signed. Your physical activity clearance stays on file and cannot be un-signed.
+          </p>
+        )}
       </div>
     </div>
   )

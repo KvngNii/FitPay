@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Dumbbell, ChevronDown, ChevronUp, Zap, FlameKindling } from 'lucide-react'
+import AddToCalendar from '@/components/AddToCalendar'
 import type { ExerciseEntry } from '@/types'
 
 function useCountdown(target: Date) {
@@ -169,6 +170,10 @@ export default function UpcomingSessionCard({ session, nextPlan, isNext }: Props
             Workout plan will appear after your first session.
           </p>
         )}
+
+        <div className="mt-4 pt-4 border-t border-slate-800/80">
+          <AddToCalendar sessionId={session.id} scheduledAt={session.scheduled_at} />
+        </div>
       </div>
     </div>
   )

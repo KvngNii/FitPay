@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { MedicalHistoryFields, EMPTY_MEDICAL_HISTORY, type MedicalHistoryFormState } from '@/components/MedicalHistoryFields'
+import DeleteAccountButton from '@/components/DeleteAccountButton'
 import Image from 'next/image'
 import { Camera } from 'lucide-react'
 import type { FitnessGoal, FitnessLevel, Gender } from '@/types'
@@ -26,6 +27,7 @@ export default function ProfilePage() {
   const [emergencyContactName, setEmergencyContactName] = useState('')
   const [emergencyContactPhone, setEmergencyContactPhone] = useState('')
   const [medical, setMedical] = useState<MedicalHistoryFormState>(EMPTY_MEDICAL_HISTORY)
+  const [consentLocked, setConsentLocked] = useState(false)
 
   const [currentAvatarUrl, setCurrentAvatarUrl] = useState<string | null>(null)
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
@@ -82,6 +84,8 @@ export default function ProfilePage() {
           additional_notes: history.additional_notes ?? '',
           consent_acknowledged: history.consent_acknowledged,
         })
+        // Once signed, the clearance can be viewed but never un-signed.
+        setConsentLocked(history.consent_acknowledged === true)
       }
 
       setLoadingData(false)
@@ -334,7 +338,7 @@ export default function ProfilePage() {
           </p>
         </div>
 
-        <MedicalHistoryFields value={medical} onChange={setMedical} />
+        <MedicalHistoryFields value={medical} onChange={setMedical} consentLocked={consentLocked} />
 
         {error && <p className="text-red-400 text-sm text-center">{error}</p>}
         {success && <p className="text-emerald-400 text-sm text-center">Profile updated.</p>}
@@ -343,6 +347,8 @@ export default function ProfilePage() {
           {saving ? 'Saving...' : 'Save changes'}
         </button>
       </form>
+
+      <DeleteAccountButton />
     </main>
   )
 }
