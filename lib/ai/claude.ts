@@ -1,4 +1,4 @@
-// Server-only — never import this from a client component.
+// Server-only - never import this from a client component.
 import Anthropic from '@anthropic-ai/sdk'
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })

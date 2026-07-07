@@ -56,7 +56,7 @@ export default async function PlanPage() {
     .eq('client_id', user.id)
     .single()
 
-  // Look for the most recent next_plan — from injury adaptation or routine progression
+  // Look for the most recent next_plan - from injury adaptation or routine progression
   const { data: latestLog } = await admin
     .from('workout_logs')
     .select('next_plan, ai_generated, created_at')

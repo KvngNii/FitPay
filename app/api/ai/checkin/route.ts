@@ -74,7 +74,7 @@ Return ONLY the SMS text, no quotes or labels.`
       message = message.trim().slice(0, 155)
     } catch (err) {
       console.error(`Checkin Claude call failed for ${client.name}:`, err)
-      message = `Hey ${client.name}! Great work this month — ${sessionsThisMonth} session${sessionsThisMonth !== 1 ? 's' : ''} done. Keep pushing toward your ${goalLabels[client.goal ?? 'general']} goal!`.slice(0, 155)
+      message = `Hey ${client.name}! Great work this month, ${sessionsThisMonth} session${sessionsThisMonth !== 1 ? 's' : ''} done. Keep pushing toward your ${goalLabels[client.goal ?? 'general']} goal!`.slice(0, 155)
     }
 
     if (client.phone) {

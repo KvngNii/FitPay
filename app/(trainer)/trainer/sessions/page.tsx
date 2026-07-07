@@ -47,7 +47,7 @@ export default async function SessionsPage() {
   const today = scheduledList.filter((s) => s.scheduled_at < endOfToday)
   const upcoming = scheduledList.filter((s) => s.scheduled_at >= endOfToday)
 
-  // Build bookable clients list (deduplicated — keep highest sessions_left per client)
+  // Build bookable clients list (deduplicated - keep highest sessions_left per client)
   const clientMap = new Map<string, { id: string; name: string; sessions_left: number; package_name: string }>()
   for (const p of activePurchases ?? []) {
     const client = p.users as unknown as { id: string; name: string } | null

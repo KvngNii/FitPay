@@ -1,4 +1,4 @@
-// Server-only — never import this from a client component.
+// Server-only - never import this from a client component.
 // All Moolre API calls must go through this module.
 import type { MoolreResponse } from '@/types'
 
@@ -20,7 +20,7 @@ const API_PUBKEY = IS_SANDBOX
   ? process.env.MOOLRE_SANDBOX_API_PUBKEY!
   : process.env.MOOLRE_API_PUBKEY!
 
-// Sandbox note: X-API-KEY and X-API-PUBKEY are not required in sandbox —
+// Sandbox note: X-API-KEY and X-API-PUBKEY are not required in sandbox -
 // only X-API-USER is checked. We still send them for parity with production.
 function baseHeaders() {
   const headers: Record<string, string> = {
@@ -36,7 +36,7 @@ function pubHeaders() {
     'Content-Type': 'application/json',
     'X-API-USER': API_USER,
   }
-  // Sandbox only checks X-API-USER — sending the pubkey causes a Token.php crash
+  // Sandbox only checks X-API-USER - sending the pubkey causes a Token.php crash
   if (!IS_SANDBOX) headers['X-API-PUBKEY'] = API_PUBKEY
   return headers
 }
@@ -71,7 +71,7 @@ export async function moolrePostPub<T = unknown>(
 }
 
 // Use for: SMS sending (requires VAS key, separate from main keys).
-// SMS always uses production keys — sandbox mode does not deliver real messages
+// SMS always uses production keys - sandbox mode does not deliver real messages
 // to real phones, so there is no meaningful sandbox for SMS.
 export async function moolreSms<T = unknown>(
   body: Record<string, unknown>

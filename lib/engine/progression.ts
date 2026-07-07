@@ -1,4 +1,4 @@
-// Rules engine — runs after every completed session.
+// Rules engine - runs after every completed session.
 // Claude is NEVER called here. This is purely deterministic logic.
 import type { ExerciseEntry, FitnessGoal, ProgressionRule, WorkoutLog } from '@/types'
 
@@ -35,7 +35,7 @@ function applyProgression(exercise: ExerciseEntry, goal: FitnessGoal): ExerciseE
     return { ...exercise, reps: Math.max(1, exercise.reps - 1) }
   }
 
-  // moderate — hold
+  // moderate - hold
   return { ...exercise }
 }
 

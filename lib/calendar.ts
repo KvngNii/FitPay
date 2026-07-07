@@ -1,4 +1,4 @@
-// Add-to-Calendar helpers. No OAuth — we generate a Google Calendar "template"
+// Add-to-Calendar helpers. No OAuth - we generate a Google Calendar "template"
 // link and a downloadable .ics file, which also works with Apple and Outlook.
 import { SESSION_DURATION_MINS } from './slots'
 

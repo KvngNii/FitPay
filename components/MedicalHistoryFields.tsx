@@ -173,7 +173,7 @@ export function MedicalHistoryFields({
         <label htmlFor="previous_injuries">Previous injuries or surgeries</label>
         <textarea
           id="previous_injuries"
-          placeholder="e.g., None — or describe past injuries/surgeries, when they happened, and recovery status"
+          placeholder="e.g., None, or describe past injuries/surgeries, when they happened, and recovery status"
           value={value.previous_injuries_surgeries}
           onChange={(e) => set('previous_injuries_surgeries', e.target.value)}
           rows={3}
@@ -185,7 +185,7 @@ export function MedicalHistoryFields({
         <label htmlFor="current_pain">Any current pain or areas to be careful with?</label>
         <textarea
           id="current_pain"
-          placeholder="e.g., None — or describe current pain/discomfort and where"
+          placeholder="e.g., None, or describe current pain/discomfort and where"
           value={value.current_pain_areas}
           onChange={(e) => set('current_pain_areas', e.target.value)}
           rows={2}

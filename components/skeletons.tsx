@@ -1,5 +1,5 @@
 // Reusable loading skeletons composed by route-level loading.tsx files.
-// Server components — they render instantly while the real page streams in.
+// Server components - they render instantly while the real page streams in.
 
 export function SkeletonLine({ className = '' }: { className?: string }) {
   return <div className={`skeleton h-4 ${className}`} />

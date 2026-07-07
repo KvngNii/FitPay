@@ -14,7 +14,7 @@ export async function markMedicalReviewed(
   const { data: profile } = await admin.from('users').select('role').eq('id', user.id).single()
   if (profile?.role !== 'trainer') return { success: false, error: 'Forbidden' }
 
-  // Update without .select() so PostgREST does not add a RETURNING clause —
+  // Update without .select() so PostgREST does not add a RETURNING clause -
   // RETURNING on tables with GENERATED ALWAYS AS STORED columns can cause silent
   // failures in some Supabase/PostgREST versions.
   const { error: updateError } = await admin
@@ -43,7 +43,7 @@ export async function markMedicalReviewed(
   }
 
   if (!check?.trainer_reviewed) {
-    console.error('[markMedicalReviewed] write did not persist — trainer_reviewed still false after update. client_id:', clientId)
+    console.error('[markMedicalReviewed] write did not persist - trainer_reviewed still false after update. client_id:', clientId)
     return { success: false, error: 'Update did not save. Please try again or contact support.' }
   }
 

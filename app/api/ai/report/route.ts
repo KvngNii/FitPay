@@ -54,7 +54,7 @@ Write 2 encouraging sentences about their progress and one specific thing to foc
     report = await callClaude({ prompt, maxTokens: 500 })
   } catch (err) {
     console.error('Report Claude call failed:', err)
-    report = `Great work on your last 4 sessions, ${client.name}! Keep pushing toward your ${goalLabels[client.goal ?? 'general']} goal — you're making solid progress.`
+    report = `Great work on your last 4 sessions, ${client.name}! Keep pushing toward your ${goalLabels[client.goal ?? 'general']} goal, and you're making solid progress.`
   }
 
   // Send report via SMS (split if needed)

@@ -153,7 +153,7 @@ export default async function PackagesPage({ searchParams }: Props) {
         )}
       </section>
 
-      {/* Refund requests — separate section */}
+      {/* Refund requests - separate section */}
       {user && (
         <div className="border-t border-slate-800 pt-8">
           <RequestRefundSection

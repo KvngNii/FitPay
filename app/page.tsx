@@ -9,9 +9,9 @@ const body = Archivo({ subsets: ['latin'], weight: ['400', '500', '600'], variab
 const mono = IBM_Plex_Mono({ subsets: ['latin'], weight: ['400', '500', '600'], variable: '--font-mono' })
 
 export const metadata: Metadata = {
-  title: 'FitPay — Get paid like you train',
+  title: 'FitPay: Get paid like you train',
   description:
-    'FitPay runs your client roster, your programming, and your money in one place. Clients pay from any phone by dialing *919*4012# — Moolre USSD, SMS and mobile money built in.',
+    'FitPay runs your client roster, your programming, and your money in one place. Clients pay from any phone by dialing *919*4012#, with Moolre USSD, SMS and mobile money built in.',
 }
 
 const KEYS = [
@@ -41,7 +41,7 @@ export default function LandingPage() {
               <p className="hero-sub">
                 FitPay runs your client roster, your programming, and your money in one place.
                 Your clients can <strong>dial a code on any phone</strong> to book sessions and buy
-                packages — Moolre USSD, SMS and mobile money are built in from day one, not bolted on later.
+                packages, with Moolre USSD, SMS and mobile money built in from day one, not bolted on later.
               </p>
               <div className="hero-cta-row">
                 <Link className="l-btn l-btn-primary" href="/signup">Create your free account</Link>
@@ -104,13 +104,13 @@ export default function LandingPage() {
               <div className="step reveal">
                 <div className="step-num">2</div>
                 <h3>Sessions get booked</h3>
-                <p>Clients pick a date and an open slot on the calendar — or book by USSD. Every booking is confirmed by SMS and deducted from their package. No group chat scheduling.</p>
+                <p>Clients pick a date and an open slot on the calendar, or book by USSD. Every booking is confirmed by SMS and deducted from their package. No group chat scheduling.</p>
                 <span className="micro">calendar → open slot → <b>booked</b></span>
               </div>
               <div className="step reveal">
                 <div className="step-num">3</div>
                 <h3>Plans progress themselves</h3>
-                <p>You log each session; the progression engine builds the next one on rules — load, reps and deload timing — so every client moves forward without you rewriting spreadsheets.</p>
+                <p>You log each session; the progression engine builds the next one on rules like load, reps and deload timing, so every client moves forward without you rewriting spreadsheets.</p>
                 <span className="micro">easy set → <b>+2.5kg</b> → auto</span>
               </div>
             </div>
@@ -127,7 +127,7 @@ export default function LandingPage() {
               <div className="feat reveal">
                 <span className="tag">Payments</span>
                 <h3>USSD on any phone</h3>
-                <p>Clients without smartphones can book sessions, check their balance, view their plan and start a package purchase by dialing *919*4012#. The Moolre payment link arrives by SMS and settles by mobile money — MTN, Telecel or AT.</p>
+                <p>Clients without smartphones can book sessions, check their balance, view their plan and start a package purchase by dialing *919*4012#. The Moolre payment link arrives by SMS and settles by mobile money on MTN, Telecel or AT.</p>
               </div>
               <div className="feat reveal">
                 <span className="tag">Programming</span>
@@ -142,7 +142,7 @@ export default function LandingPage() {
               <div className="feat reveal">
                 <span className="tag">SMS</span>
                 <h3>Messages that send themselves</h3>
-                <p>Booking confirmations and payment links go out automatically by SMS from FitPay&apos;s approved sender ID. You keep the coach relationship — the system does the admin.</p>
+                <p>Booking confirmations and payment links go out automatically by SMS from FitPay&apos;s approved sender ID. You keep the coach relationship, and the system does the admin.</p>
               </div>
             </div>
           </div>
@@ -184,7 +184,7 @@ export default function LandingPage() {
                 <p className="price-foot">For the coach whose roster outgrew the group chat.</p>
               </div>
             </div>
-            <p className="price-note reveal">Long term, FitPay takes 1% per transaction — the platform only earns when you do.</p>
+            <p className="price-note reveal">Long term, FitPay takes 1% per transaction, so the platform only earns when you do.</p>
           </div>
         </section>
 
@@ -192,7 +192,7 @@ export default function LandingPage() {
         <section className="final" id="start">
           <div className="wrap">
             <span className="dial-code reveal">*919*4012#</span>
-            <p className="reveal">That&apos;s the whole experience for your clients — book, check balance, buy sessions, from any phone. Yours is even shorter: create an account and start coaching on FitPay today.</p>
+            <p className="reveal">That&apos;s the whole experience for your clients: book, check balance, buy sessions, from any phone. Yours is even shorter: create an account and start coaching on FitPay today.</p>
             <div className="final-cta-row reveal">
               <Link className="l-btn l-btn-primary" href="/signup">Create your free account</Link>
               <Link className="l-btn l-btn-ghost" href="/login">Log in</Link>

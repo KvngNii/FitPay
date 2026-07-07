@@ -108,7 +108,7 @@ export default function UpcomingSessionCard({ session, nextPlan, isNext }: Props
         {isPast ? (
           <div className="flex items-center gap-2 py-3">
             <FlameKindling size={18} className="text-emerald-400" />
-            <p className="font-semibold text-emerald-400">Session in progress — get to it!</p>
+            <p className="font-semibold text-emerald-400">Session in progress, get to it!</p>
           </div>
         ) : (
           <div className="flex items-center justify-center gap-3 py-2">

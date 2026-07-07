@@ -150,7 +150,7 @@ export default async function EarningsPage() {
         </>
       )}
 
-      {/* Refund requests — separate section */}
+      {/* Refund requests - separate section */}
       <div className="border-t border-slate-800 pt-8">
         <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
           <RotateCcw size={14} />

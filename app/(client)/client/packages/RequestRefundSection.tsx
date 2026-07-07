@@ -103,7 +103,7 @@ export default function RequestRefundSection({
         {submitted ? (
           <div className="flex items-center gap-2 text-sm text-emerald-400">
             <CheckCircle2 size={15} />
-            Request submitted — your trainer will be in touch.
+            Request submitted. Your trainer will be in touch.
           </div>
         ) : eligiblePurchases.length > 0 ? (
           <form onSubmit={handleSubmit} className="space-y-3">
@@ -117,7 +117,7 @@ export default function RequestRefundSection({
               >
                 {eligiblePurchases.map((p) => (
                   <option key={p.id} value={p.id}>
-                    {p.packageName} — {p.sessionsLeft} of {p.totalSessions} sessions left
+                    {p.packageName} · {p.sessionsLeft} of {p.totalSessions} sessions left
                   </option>
                 ))}
               </select>
@@ -176,7 +176,7 @@ export default function RequestRefundSection({
               disabled={loading || !purchaseId || !sessionsRequested}
               className="w-full bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium text-sm py-2 rounded-lg transition-all disabled:opacity-50"
             >
-              {loading ? 'Submitting...' : `Request refund — GH₵${refundAmount.toFixed(2)}`}
+              {loading ? 'Submitting...' : `Request refund of GH₵${refundAmount.toFixed(2)}`}
             </button>
           </form>
         ) : (

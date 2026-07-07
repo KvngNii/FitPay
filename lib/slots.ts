@@ -15,7 +15,7 @@ export const SLOTS = SLOT_HOURS.map((hour) => ({
 
 export const SESSION_DURATION_MINS = 60
 
-// Ghana is UTC+0 (no DST) — build slot datetimes in UTC so they are stable
+// Ghana is UTC+0 (no DST) - build slot datetimes in UTC so they are stable
 // regardless of server timezone.
 export function slotDateTime(dateYMD: string, hour: number): Date {
   const [y, m, d] = dateYMD.split('-').map(Number)

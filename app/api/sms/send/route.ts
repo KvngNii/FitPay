@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { moolreSms } from '@/lib/moolre'
 
 // Sends a single SMS via Moolre SMS API.
-// Called internally by webhook and pg_cron — not exposed to clients directly.
+// Called internally by webhook and pg_cron - not exposed to clients directly.
 // Body: { to: string, message: string }
 export async function POST(req: NextRequest) {
   const { to, message } = await req.json()

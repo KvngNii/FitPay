@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient, createAdminSupabaseClient } from '@/lib/supabase/server'
 import { buildIcs } from '@/lib/calendar'
 
-// GET /api/calendar/[sessionId] — download an .ics for a session.
+// GET /api/calendar/[sessionId] - download an .ics for a session.
 // Only the session's client or trainer may fetch it.
 export async function GET(_req: NextRequest, { params }: { params: { sessionId: string } }) {
   const auth = createServerSupabaseClient()
@@ -31,7 +31,7 @@ export async function GET(_req: NextRequest, { params }: { params: { sessionId: 
     stamp: new Date(),
     details: session.notes
       ? `Training session with FitPay. Notes: ${session.notes}`
-      : `Training session with FitPay${session.trainer_id === user.id ? ` — client: ${clientName}` : ''}.`,
+      : `Training session with FitPay${session.trainer_id === user.id ? `, client: ${clientName}` : ''}.`,
   })
 
   return new NextResponse(ics, {

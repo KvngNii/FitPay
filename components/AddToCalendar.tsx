@@ -5,7 +5,7 @@ import { CalendarPlus, Check } from 'lucide-react'
 import { googleCalendarUrl } from '@/lib/calendar'
 
 // Compact "Add to calendar" control: a Google Calendar link plus an .ics
-// download (Apple/Outlook). No OAuth — just a template link and a file.
+// download (Apple/Outlook). No OAuth - just a template link and a file.
 export default function AddToCalendar({
   sessionId,
   scheduledAt,

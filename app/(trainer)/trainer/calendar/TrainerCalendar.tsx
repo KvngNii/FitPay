@@ -151,7 +151,7 @@ export default function TrainerCalendar() {
                         </div>
                       </div>
                       <div className="mt-3 pt-3 border-t border-slate-800">
-                        <AddToCalendar sessionId={s.id} scheduledAt={s.scheduled_at} title={`FitPay — ${s.client_name}`} compact />
+                        <AddToCalendar sessionId={s.id} scheduledAt={s.scheduled_at} title={`FitPay session with ${s.client_name}`} compact />
                       </div>
                     </div>
                   )

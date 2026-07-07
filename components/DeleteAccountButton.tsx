@@ -29,7 +29,7 @@ export default function DeleteAccountButton() {
     try {
       await createClient().auth.signOut()
     } catch {
-      // ignore — the account is already gone server-side
+      // ignore - the account is already gone server-side
     }
     router.push('/signup')
   }

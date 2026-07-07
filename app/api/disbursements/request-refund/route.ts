@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'This purchase does not belong to your account' }, { status: 403 })
   }
   if (purchase.status === 'pending') {
-    return NextResponse.json({ error: 'Payment is still pending — cannot request a refund yet' }, { status: 400 })
+    return NextResponse.json({ error: 'Payment is still pending, so you cannot request a refund yet' }, { status: 400 })
   }
   if (purchase.status === 'refunded') {
     return NextResponse.json({ error: 'This purchase has already been refunded' }, { status: 400 })

@@ -16,7 +16,7 @@ import DeleteAccountButton from '@/components/DeleteAccountButton'
 
 export const dynamic = 'force-dynamic'
 
-// Ghana is UTC+0 (no DST) — using UTC boundaries is correct for Accra.
+// Ghana is UTC+0 (no DST) - using UTC boundaries is correct for Accra.
 const TZ = 'Africa/Accra'
 
 function ghs(n: number) {

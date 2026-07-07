@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabaseClient } from '@/lib/supabase/server'
 import type { MoolreWebhookPayload } from '@/types'
 
-// Always return HTTP 200 — Moolre retries on any non-200 response.
+// Always return HTTP 200 - Moolre retries on any non-200 response.
 // Idempotent: check moolre_ref before processing. Duplicate = return 200 immediately.
 export async function POST(req: NextRequest) {
   try {
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
 
     if (!purchase) return NextResponse.json({ received: true })
 
-    // Already processed — return 200 without re-processing
+    // Already processed - return 200 without re-processing
     if (purchase.status === 'active') return NextResponse.json({ received: true })
 
     // Activate the purchase
@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
       admin.from('packages').select('name, sessions').eq('id', purchase.package_id).single(),
     ])
 
-    // Fire SMS confirmation — non-blocking
+    // Fire SMS confirmation - non-blocking
     if (client?.phone && pkg) {
       const appUrl = process.env.NEXT_PUBLIC_APP_URL!
       fetch(`${appUrl}/api/sms/send`, {

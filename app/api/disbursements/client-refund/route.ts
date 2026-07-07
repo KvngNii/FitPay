@@ -9,7 +9,7 @@ const NETWORK_CHANNELS: Record<string, string> = {
   at: '7',
 }
 
-// Client-initiated reimbursement — authenticated client requests a refund for their own purchase.
+// Client-initiated reimbursement - authenticated client requests a refund for their own purchase.
 export async function POST(req: NextRequest) {
   const auth = createServerSupabaseClient()
   const { data: { user } } = await auth.auth.getUser()
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'This purchase has already been refunded' }, { status: 400 })
   }
   if (purchase.status === 'pending') {
-    return NextResponse.json({ error: 'Payment is still pending — cannot refund yet' }, { status: 400 })
+    return NextResponse.json({ error: 'Payment is still pending and cannot be refunded yet' }, { status: 400 })
   }
 
   const pkg = purchase.packages as unknown as { price_ghs: number; name: string } | null

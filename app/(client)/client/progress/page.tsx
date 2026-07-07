@@ -119,7 +119,7 @@ export default async function ProgressPage() {
           <p className="text-xs text-slate-500 mt-2">
             {phaseTarget - phaseNow > 0
               ? `${phaseTarget - phaseNow} session${phaseTarget - phaseNow !== 1 ? 's' : ''} until your next deload week`
-              : 'Deload week is up next — lighter loads to recover'}
+              : 'Deload week is up next, with lighter loads to recover'}
           </p>
         </div>
       ) : (

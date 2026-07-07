@@ -55,7 +55,7 @@ export default async function ClientDashboard() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  // Gate on medical history server-side — no dashboard flash before the redirect.
+  // Gate on medical history server-side - no dashboard flash before the redirect.
   const { data: medical } = await supabase
     .from('medical_history')
     .select('id')

@@ -139,7 +139,7 @@
   }
 }
 
-/* Honour reduced-motion preferences — disable transforms and long animations */
+/* Honour reduced-motion preferences - disable transforms and long animations */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

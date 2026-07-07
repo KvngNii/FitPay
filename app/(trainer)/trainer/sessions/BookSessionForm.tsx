@@ -69,7 +69,7 @@ export default function BookSessionForm({ clients }: { clients: Client[] }) {
           <option value="">Select a client</option>
           {clients.map((c) => (
             <option key={c.id} value={c.id}>
-              {c.name} — {c.sessions_left} sessions left ({c.package_name})
+              {c.name} · {c.sessions_left} sessions left ({c.package_name})
             </option>
           ))}
         </select>

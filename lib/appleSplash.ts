@@ -1,5 +1,5 @@
 // iOS PWA launch (startup) images. iOS does not use manifest background_color
-// for the splash — it needs a per-device apple-touch-startup-image whose media
+// for the splash - it needs a per-device apple-touch-startup-image whose media
 // query matches the device's CSS width/height, pixel ratio, and orientation.
 // Portrait only (the app is portrait-locked). Shared dims cover multiple models.
 export type AppleSplash = { file: string; w: number; h: number; r: number }

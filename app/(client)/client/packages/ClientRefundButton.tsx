@@ -56,7 +56,7 @@ export default function ClientRefundButton({
     return (
       <div className="flex items-center gap-1.5 text-xs text-emerald-400 mt-2">
         <CheckCircle size={12} />
-        Refund requested — check your phone
+        Refund requested. Check your phone
       </div>
     )
   }

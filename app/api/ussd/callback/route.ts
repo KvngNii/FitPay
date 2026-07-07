@@ -12,7 +12,7 @@ const CORS_HEADERS = {
   'Access-Control-Allow-Headers': 'Content-Type',
 }
 
-// Preflight — needed by the Moolre browser-based USSD simulator
+// Preflight - needed by the Moolre browser-based USSD simulator
 export async function OPTIONS() {
   return new NextResponse(null, { status: 204, headers: CORS_HEADERS })
 }
@@ -337,7 +337,7 @@ export async function POST(req: NextRequest) {
       return endSession('Could not start payment. Try again later.')
     }
 
-    // Send SMS after the USSD response is returned — avoids the 5-second telco timeout.
+    // Send SMS after the USSD response is returned - avoids the 5-second telco timeout.
     // waitUntil keeps the Vercel function alive until the SMS call completes.
     if (client.phone) {
       const senderid = process.env.MOOLRE_SENDER_ID ?? 'FitPay'
