@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
+import SplashScreen from '@/components/SplashScreen'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
@@ -32,6 +33,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.variable} font-sans antialiased bg-slate-950 text-slate-50`}>
+        <SplashScreen />
         {children}
       </body>
     </html>

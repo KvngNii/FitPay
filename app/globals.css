@@ -119,6 +119,16 @@
   }
 }
 
+/* Indeterminate loader bar sweep for the splash screen */
+@keyframes splash-loader {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(260%);
+  }
+}
+
 @layer utilities {
   /* Respect the iOS home-indicator / notch inside the fixed bottom nav (PWA) */
   .pb-safe {
