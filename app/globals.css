@@ -7,8 +7,12 @@
     box-sizing: border-box;
   }
 
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+
   body {
-    @apply bg-slate-950 text-slate-50 min-h-screen;
+    @apply bg-slate-950 text-slate-50 min-h-screen antialiased;
     background-image:
       radial-gradient(ellipse 80% 50% at 50% -10%, rgba(16, 185, 129, 0.12), transparent),
       radial-gradient(ellipse 60% 40% at 100% 0%, rgba(20, 184, 166, 0.08), transparent);
@@ -23,6 +27,28 @@
 
   label {
     @apply block text-sm font-medium text-slate-300 mb-1;
+  }
+
+  /* Consistent, visible keyboard focus across interactive elements */
+  a:focus-visible,
+  button:focus-visible {
+    @apply outline-none ring-2 ring-emerald-500/70 ring-offset-2 ring-offset-slate-950 rounded-lg;
+  }
+
+  /* Subtle, on-brand scrollbar */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(51, 65, 85, 0.8) transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  *::-webkit-scrollbar-thumb {
+    @apply bg-slate-700/70 rounded-full;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    @apply bg-slate-600;
   }
 }
 
@@ -40,7 +66,7 @@
   }
 
   .card-interactive {
-    @apply card hover:-translate-y-0.5 hover:border-emerald-500/30 cursor-pointer;
+    @apply card hover:-translate-y-0.5 hover:border-emerald-500/30 cursor-pointer active:translate-y-0;
   }
 
   .stat-card {
@@ -58,5 +84,36 @@
 
   .badge-active {
     @apply text-xs bg-emerald-900/40 text-emerald-400 px-2 py-1 rounded-full border border-emerald-500/20;
+  }
+
+  /* Standardised page + section headings so every screen reads as one system */
+  .page-title {
+    @apply text-2xl font-bold glow-text tracking-tight;
+  }
+
+  .section-label {
+    @apply text-sm font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5;
+  }
+}
+
+@layer utilities {
+  /* Respect the iOS home-indicator / notch inside the fixed bottom nav (PWA) */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .h-nav-safe {
+    height: calc(4rem + env(safe-area-inset-bottom));
+  }
+}
+
+/* Honour reduced-motion preferences — disable transforms and long animations */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

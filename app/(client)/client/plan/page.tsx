@@ -21,7 +21,7 @@ function DifficultyBadge({ d }: { d: string }) {
 function ExerciseList({ exercises, label }: { exercises: ExerciseEntry[]; label: string }) {
   return (
     <section className="mb-6">
-      <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">{label}</h2>
+      <h2 className="section-label mb-3">{label}</h2>
       <div className="space-y-2">
         {exercises.map((ex, i) => (
           <div key={i} className="card">
@@ -86,7 +86,7 @@ export default async function PlanPage() {
   return (
     <main className="p-4 max-w-lg mx-auto">
       <div className="mb-5">
-        <h1 className="text-2xl font-bold text-emerald-400">My Plan</h1>
+        <h1 className="page-title">My Plan</h1>
         {rule && (
           <p className="text-sm text-slate-400 mt-1">
             {rule.sessions_in_phase} session{rule.sessions_in_phase !== 1 ? 's' : ''} completed

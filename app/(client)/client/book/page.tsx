@@ -51,14 +51,14 @@ export default async function BookPage() {
 
   return (
     <main className="p-4 max-w-lg mx-auto">
-      <h1 className="text-2xl font-bold glow-text mb-1">Book a Session</h1>
+      <h1 className="page-title mb-1">Book a Session</h1>
       <p className="text-slate-400 text-sm mb-5">Schedule your next workout with your trainer.</p>
 
       <BookForm sessionsLeft={purchase?.sessions_left ?? 0} />
 
       {upcoming && upcoming.length > 0 && (
         <section className="mt-8">
-          <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">
+          <h2 className="section-label mb-3">
             Upcoming Sessions
           </h2>
           <div className="space-y-3">
