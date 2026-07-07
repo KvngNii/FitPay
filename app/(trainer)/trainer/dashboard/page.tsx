@@ -147,7 +147,7 @@ export default async function TrainerDashboard() {
       >
         <div
           className="absolute inset-0 pointer-events-none"
-          style={{ background: 'radial-gradient(ellipse 70% 60% at 85% 0%, rgba(224, 123, 31,0.14), transparent)' }}
+          style={{ background: 'radial-gradient(ellipse 70% 60% at 85% 0%, rgba(16,185,129,0.14), transparent)' }}
         />
         <div className="relative flex items-start justify-between">
           <div>

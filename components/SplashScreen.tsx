@@ -30,13 +30,13 @@ export default function SplashScreen() {
   return (
     <div
       aria-hidden="true"
-      className={`fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#110F0C] transition-opacity duration-500 ${
+      className={`fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#070d09] transition-opacity duration-500 ${
         phase === 'out' ? 'opacity-0 pointer-events-none' : 'opacity-100'
       }`}
     >
       <div
         className="absolute inset-0 pointer-events-none"
-        style={{ background: 'radial-gradient(ellipse 60% 40% at 50% 42%, rgba(224, 123, 31,0.16), transparent)' }}
+        style={{ background: 'radial-gradient(ellipse 60% 40% at 50% 42%, rgba(16,185,129,0.16), transparent)' }}
       />
 
       <div className="relative flex flex-col items-center">
