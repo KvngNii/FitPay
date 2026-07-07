@@ -174,7 +174,7 @@ export default function LandingPage() {
             <p className="text-slate-400 leading-relaxed mb-5">
               Clients without smartphones can still book sessions and buy packages — just dial{' '}
               <span className="text-emerald-400 font-mono text-sm bg-emerald-500/10 px-1.5 py-0.5 rounded">
-                *919*4012#
+                *203*4890#
               </span>{' '}
               from any MTN, AirtelTigo, or Telecel number.
             </p>
