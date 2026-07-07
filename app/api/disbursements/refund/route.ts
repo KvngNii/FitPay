@@ -35,11 +35,14 @@ export async function POST(req: NextRequest) {
 
   const { data: purchase } = await admin
     .from('purchases')
-    .select('id, status, client_id, packages(price_ghs)')
+    .select('id, status, client_id, trainer_id, packages(price_ghs)')
     .eq('id', purchase_id)
     .single()
 
   if (!purchase) return NextResponse.json({ error: 'Purchase not found' }, { status: 404 })
+  if (purchase.trainer_id !== user.id) {
+    return NextResponse.json({ error: 'That purchase is not on your roster' }, { status: 403 })
+  }
   if (purchase.status === 'refunded') {
     return NextResponse.json({ error: 'Purchase already refunded' }, { status: 400 })
   }

@@ -17,11 +17,14 @@ export async function POST(req: NextRequest) {
 
   const { data: session } = await admin
     .from('sessions')
-    .select('id, status, client_id, purchase_id')
+    .select('id, status, client_id, purchase_id, trainer_id')
     .eq('id', session_id)
     .single()
 
   if (!session) return NextResponse.json({ error: 'Session not found' }, { status: 404 })
+  if (session.trainer_id !== user.id) {
+    return NextResponse.json({ error: 'That session is not on your roster' }, { status: 403 })
+  }
   if (session.status !== 'scheduled') {
     return NextResponse.json({ error: 'Session is not scheduled' }, { status: 400 })
   }

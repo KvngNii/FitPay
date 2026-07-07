@@ -16,6 +16,7 @@ export default async function EarningsPage() {
       .from('purchases')
       .select('id, created_at, status, packages(name, price_ghs), users!client_id(name)')
       .in('status', ['active', 'expired'])
+      .eq('trainer_id', user!.id)
       .order('created_at', { ascending: false }),
     admin
       .from('disbursements')
@@ -31,6 +32,7 @@ export default async function EarningsPage() {
     admin
       .from('refund_requests')
       .select('id, purchase_id, client_id, amount_ghs, network, sessions_requested, status, requested_at, resolved_at, users!client_id(name), purchases!purchase_id(packages(name))')
+      .eq('trainer_id', user!.id)
       .order('requested_at', { ascending: false })
       .limit(50),
   ])

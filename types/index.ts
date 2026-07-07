@@ -17,6 +17,7 @@ export type User = {
   phone: string
   email: string | null
   role: UserRole
+  trainer_id: string | null
   goal: FitnessGoal | null
   fitness_level: FitnessLevel | null
   date_of_birth: string | null
@@ -68,6 +69,7 @@ export type Package = {
 export type Purchase = {
   id: string
   client_id: string
+  trainer_id: string | null
   package_id: string
   moolre_ref: string
   status: PurchaseStatus
@@ -134,6 +136,7 @@ export type RefundRequest = {
   id: string
   purchase_id: string
   client_id: string
+  trainer_id: string | null
   amount_ghs: number
   network: string
   status: RefundRequestStatus

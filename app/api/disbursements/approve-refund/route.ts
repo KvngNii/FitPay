@@ -31,6 +31,7 @@ export async function POST(req: NextRequest) {
     .from('refund_requests')
     .select('id, purchase_id, client_id, amount_ghs, network, status, sessions_requested')
     .eq('id', request_id)
+    .eq('trainer_id', user.id)
     .single()
 
   if (!refundReq) return NextResponse.json({ error: 'Refund request not found' }, { status: 404 })

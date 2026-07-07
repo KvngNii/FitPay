@@ -1,5 +1,5 @@
 import Image from 'next/image'
-import { createAdminSupabaseClient } from '@/lib/supabase/server'
+import { createAdminSupabaseClient, createServerSupabaseClient } from '@/lib/supabase/server'
 import { UserCircle2 } from 'lucide-react'
 import { MedicalHistoryCard } from './MedicalHistoryCard'
 import type { MedicalHistory } from '@/types'
@@ -7,12 +7,15 @@ import type { MedicalHistory } from '@/types'
 export const dynamic = 'force-dynamic'
 
 export default async function ClientsPage() {
+  const auth = createServerSupabaseClient()
+  const { data: { user } } = await auth.auth.getUser()
   const admin = createAdminSupabaseClient()
 
   const { data: clients } = await admin
     .from('users')
     .select('id, name, phone, email, goal, fitness_level, date_of_birth, emergency_contact_name, emergency_contact_phone, avatar_url, created_at')
     .eq('role', 'client')
+    .eq('trainer_id', user!.id)
     .order('created_at', { ascending: false })
 
   const clientIds = clients?.map((c) => c.id) ?? []

@@ -53,7 +53,8 @@ export default async function TrainerDashboard() {
     admin
       .from('purchases')
       .select('id, status, created_at, client_id, packages(price_ghs)')
-      .in('status', ['active', 'expired']),
+      .in('status', ['active', 'expired'])
+      .eq('trainer_id', user!.id),
     admin
       .from('disbursements')
       .select('amount_ghs, type, status')
@@ -69,7 +70,8 @@ export default async function TrainerDashboard() {
     admin
       .from('refund_requests')
       .select('*', { count: 'exact', head: true })
-      .eq('status', 'pending'),
+      .eq('status', 'pending')
+      .eq('trainer_id', user!.id),
     admin
       .from('sessions')
       .select('*', { count: 'exact', head: true })

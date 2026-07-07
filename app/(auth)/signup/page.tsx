@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
@@ -16,6 +16,8 @@ export default function SignupPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [role, setRole] = useState<UserRole>('client')
+  const [trainerId, setTrainerId] = useState('')
+  const [trainers, setTrainers] = useState<{ id: string; name: string }[]>([])
   const [goal, setGoal] = useState<FitnessGoal>('general')
   const [fitnessLevel, setFitnessLevel] = useState<FitnessLevel>('beginner')
   const [dateOfBirth, setDateOfBirth] = useState('')
@@ -27,9 +29,23 @@ export default function SignupPage() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
+  // Load the list of trainers so a client can pick who they train with.
+  useEffect(() => {
+    fetch('/api/trainers')
+      .then((r) => r.json())
+      .then((d) => setTrainers(d.trainers ?? []))
+      .catch(() => setTrainers([]))
+  }, [])
+
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
+
+    if (role === 'client' && !trainerId) {
+      setError('Please choose your trainer.')
+      return
+    }
+
     setLoading(true)
 
     const supabase = createClient()
@@ -48,6 +64,7 @@ export default function SignupPage() {
       phone,
       email,
       role,
+      trainer_id: role === 'client' ? trainerId : null,
       goal: role === 'client' ? goal : null,
       fitness_level: role === 'client' ? fitnessLevel : null,
       date_of_birth: role === 'client' && dateOfBirth ? dateOfBirth : null,
@@ -157,6 +174,28 @@ export default function SignupPage() {
 
             {role === 'client' && (
               <>
+                <div className="pt-3 border-t border-slate-800">
+                  <p className="text-sm font-semibold text-slate-300 mt-1 mb-3">Your trainer</p>
+                </div>
+
+                <div>
+                  <label htmlFor="trainer">Who do you train with?</label>
+                  <select
+                    id="trainer"
+                    value={trainerId}
+                    onChange={(e) => setTrainerId(e.target.value)}
+                    required
+                  >
+                    <option value="" disabled>Select your trainer</option>
+                    {trainers.map((t) => (
+                      <option key={t.id} value={t.id}>{t.name}</option>
+                    ))}
+                  </select>
+                  {trainers.length === 0 && (
+                    <p className="text-xs text-slate-500 mt-1">No trainers are available yet. Please check back soon.</p>
+                  )}
+                </div>
+
                 <div className="pt-3 border-t border-slate-800">
                   <p className="text-sm font-semibold text-slate-300 mt-1 mb-3">Training profile</p>
                 </div>

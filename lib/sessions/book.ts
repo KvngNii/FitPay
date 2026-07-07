@@ -34,6 +34,7 @@ export async function bookSession(
   const { data: clash } = await admin
     .from('sessions')
     .select('id')
+    .eq('trainer_id', trainer_id)
     .eq('scheduled_at', scheduled_at)
     .eq('status', 'scheduled')
     .limit(1)

@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
 
   const { data: purchase } = await admin
     .from('purchases')
-    .select('id, status, client_id, sessions_left, packages(price_ghs, sessions)')
+    .select('id, status, client_id, trainer_id, sessions_left, packages(price_ghs, sessions)')
     .eq('id', purchase_id)
     .single()
 
@@ -76,6 +76,7 @@ export async function POST(req: NextRequest) {
   const { error: insertError } = await admin.from('refund_requests').insert({
     purchase_id,
     client_id: user.id,
+    trainer_id: purchase.trainer_id,
     amount_ghs: proRatedAmount,
     network,
     sessions_requested,

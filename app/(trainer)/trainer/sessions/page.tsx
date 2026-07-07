@@ -1,4 +1,4 @@
-import { createAdminSupabaseClient } from '@/lib/supabase/server'
+import { createAdminSupabaseClient, createServerSupabaseClient } from '@/lib/supabase/server'
 import { CalendarClock, History, Sun } from 'lucide-react'
 import BookSessionForm from './BookSessionForm'
 import { SessionCard } from './SessionActions'
@@ -14,6 +14,8 @@ type ScheduledSession = {
 }
 
 export default async function SessionsPage() {
+  const auth = createServerSupabaseClient()
+  const { data: { user } } = await auth.auth.getUser()
   const admin = createAdminSupabaseClient()
 
   const now = new Date()
@@ -27,18 +29,21 @@ export default async function SessionsPage() {
       .from('sessions')
       .select('id, scheduled_at, status, notes, users!client_id(name, phone)')
       .eq('status', 'scheduled')
+      .eq('trainer_id', user!.id)
       .order('scheduled_at', { ascending: true })
       .limit(40),
     admin
       .from('sessions')
       .select('id, scheduled_at, status, notes, users!client_id(name)')
       .in('status', ['completed', 'cancelled', 'no_show'])
+      .eq('trainer_id', user!.id)
       .order('scheduled_at', { ascending: false })
       .limit(15),
     admin
       .from('purchases')
       .select('client_id, sessions_left, packages(name), users!client_id(id, name)')
       .eq('status', 'active')
+      .eq('trainer_id', user!.id)
       .gt('sessions_left', 0),
   ])
 

@@ -252,14 +252,14 @@ export async function POST(req: NextRequest) {
     scheduled.setUTCDate(scheduled.getUTCDate() + data.day_offset)
     scheduled.setUTCHours(TIME_OPTIONS[idx].hour, 0, 0, 0)
 
-    const { data: trainer } = await admin.from('users').select('id').eq('role', 'trainer').limit(1).single()
-    if (!trainer) {
-      return endSession('Booking unavailable right now. Try again later.')
+    const { data: bookingClient } = await admin.from('users').select('trainer_id').eq('id', clientId).single()
+    if (!bookingClient?.trainer_id) {
+      return endSession('No trainer is assigned to your account yet. Try again later.')
     }
 
     const result = await bookSession(admin, {
       client_id: clientId,
-      trainer_id: trainer.id,
+      trainer_id: bookingClient.trainer_id,
       scheduled_at: scheduled.toISOString(),
     })
 
@@ -285,7 +285,7 @@ export async function POST(req: NextRequest) {
     const packageId = packageIds[idx]
     const [{ data: pkg }, { data: client }] = await Promise.all([
       admin.from('packages').select('id, name, sessions, price_ghs, duration_days').eq('id', packageId).single(),
-      admin.from('users').select('phone, email, name').eq('id', clientId).single(),
+      admin.from('users').select('phone, email, name, trainer_id').eq('id', clientId).single(),
     ])
 
     if (!pkg || !client) {
@@ -298,6 +298,7 @@ export async function POST(req: NextRequest) {
 
     const { error: insertError } = await admin.from('purchases').insert({
       client_id: clientId,
+      trainer_id: client.trainer_id,
       package_id: pkg.id,
       moolre_ref: externalref,
       status: 'pending',
