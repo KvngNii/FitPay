@@ -181,7 +181,7 @@ export async function POST(req: NextRequest) {
         return endSession("Your plan isn't ready yet. Check back after your first session.")
       }
 
-      const lines = plan.slice(0, 4).map((ex, i) => `${i + 1}. ${ex.name} - ${ex.sets}x${ex.reps}`)
+      const lines = plan.slice(0, 4).map((ex, i) => `${i + 1}. ${ex.name} · ${ex.sets}x${ex.reps}`)
       return endSession(`Your next session:\n${lines.join('\n')}`)
     }
 
@@ -211,7 +211,7 @@ export async function POST(req: NextRequest) {
         return endSession('No packages available right now.')
       }
 
-      const menu = packages.map((p, i) => `${i + 1}. ${p.name} - GH₵${p.price_ghs}`).join('\n')
+      const menu = packages.map((p, i) => `${i + 1}. ${p.name} · GH₵${p.price_ghs}`).join('\n')
       return transition('buy_package', { package_ids: packages.map((p) => p.id) }, `Buy sessions:\n${menu}\n0. Back`)
     }
 

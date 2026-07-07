@@ -231,7 +231,7 @@ export function MedicalHistoryFields({
         </label>
         {consentLocked && (
           <p className="text-xs text-emerald-400/80 mt-2 pl-7">
-            Signed. Your physical activity clearance stays on file and cannot be un-signed.
+            Signed. Your physical activity clearance stays on file and cannot be undone.
           </p>
         )}
       </div>

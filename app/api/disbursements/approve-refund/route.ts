@@ -137,7 +137,7 @@ export async function POST(req: NextRequest) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       to: client.phone,
-      message: `Hi ${client.name}, your FitPay refund of GH₵${amountNum} for ${sessionsRequested} ${sessionWord} has been approved and is on its way to your mobile money. - FitPay`,
+      message: `Hi ${client.name}, your FitPay refund of GH₵${amountNum} for ${sessionsRequested} ${sessionWord} has been approved and is on its way to your mobile money. Sent by FitPay`,
     }),
   }).catch(() => {})
 

@@ -72,7 +72,7 @@ export async function bookSession(
     const date = new Date(scheduled_at)
     const dateStr = date.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })
     const timeStr = date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
-    const msg = `Hi ${client.name}! Your session is booked for ${dateStr} at ${timeStr}. See you then! - FitPay`
+    const msg = `Hi ${client.name}! Your session is booked for ${dateStr} at ${timeStr}. See you then! Sent by FitPay`
     const appUrl = process.env.NEXT_PUBLIC_APP_URL!
     fetch(`${appUrl}/api/sms/send`, {
       method: 'POST',

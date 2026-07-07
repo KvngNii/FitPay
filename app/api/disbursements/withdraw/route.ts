@@ -93,7 +93,7 @@ export async function POST(req: NextRequest) {
       amount: String(amountNum),
       receiver: phone,
       externalref,
-      reference: `FitPay withdrawal - ${profile.name}`,
+      reference: `FitPay withdrawal for ${profile.name}`,
       accountnumber: MOOLRE_ACCOUNT,
     })
     console.log('Moolre transfer response:', JSON.stringify(transferRes))

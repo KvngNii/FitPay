@@ -102,7 +102,7 @@ export default async function PlanPage() {
 
       {isAdapted && latestPlan && latestPlan.length > 0 && (
         <div className="mb-4 px-3 py-2 rounded-lg bg-yellow-900/20 border border-yellow-800/40">
-          <p className="text-xs text-yellow-400 font-medium">Injury-adapted plan — modified to keep you safe</p>
+          <p className="text-xs text-yellow-400 font-medium">Adapted for your injury to keep you safe</p>
         </div>
       )}
 

@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         to: client.phone,
-        message: `Hi ${client.name}, your upcoming session has been cancelled. Your session credit has been returned. - FitPay`,
+        message: `Hi ${client.name}, your upcoming session has been cancelled. Your session credit has been returned. Sent by FitPay`,
       }),
     }).catch(() => {})
   }

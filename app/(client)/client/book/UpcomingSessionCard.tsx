@@ -84,7 +84,7 @@ export default function UpcomingSessionCard({ session, nextPlan, isNext }: Props
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
-          background: 'radial-gradient(ellipse 80% 40% at 50% 0%, rgba(16,185,129,0.1), transparent)',
+          background: 'radial-gradient(ellipse 80% 40% at 50% 0%, rgba(224, 123, 31,0.1), transparent)',
         }}
       />
 

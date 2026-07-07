@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         to: client.phone,
-        message: `Hi ${client.name}, your refund request has been reviewed by your trainer. Please contact them directly for more details. - FitPay`,
+        message: `Hi ${client.name}, your refund request has been reviewed by your trainer. Please contact them directly for more details. Sent by FitPay`,
       }),
     }).catch(() => {})
   }

@@ -94,7 +94,7 @@ export async function POST(req: NextRequest) {
       amount: String(amountNum),
       receiver: client.phone,
       externalref,
-      reference: `FitPay refund - ${pkg?.name ?? 'package'}`,
+      reference: `FitPay refund for ${pkg?.name ?? 'package'}`,
       accountnumber: MOOLRE_ACCOUNT,
     })
     console.log('Client refund transfer response:', JSON.stringify(transferRes))
@@ -138,7 +138,7 @@ export async function POST(req: NextRequest) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       to: client.phone,
-      message: `Hi ${client.name}, your FitPay refund of GH₵${amountNum} is on its way to your ${network.toUpperCase()} mobile money. - FitPay`,
+      message: `Hi ${client.name}, your FitPay refund of GH₵${amountNum} is on its way to your ${network.toUpperCase()} mobile money. Sent by FitPay`,
     }),
   }).catch(() => {})
 

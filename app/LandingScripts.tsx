@@ -16,7 +16,7 @@ export default function LandingScripts() {
     const menuText =
       'FitPay\n1. Book a session\n2. View my plan\n3. Session balance\n4. Buy sessions\n0. Exit\n\nReply: '
     const packagesText =
-      'Buy sessions:\n1. Starter - GH₵250\n2. Premium - GH₵450\n3. Elite - GH₵800\n0. Back\n\nReply: '
+      'Buy sessions:\n1. Starter · GH₵250\n2. Premium · GH₵450\n3. Elite · GH₵800\n0. Back\n\nReply: '
     const sentText =
       sigLine +
       'FitPay\n\nPayment link sent via SMS. Complete payment to activate your sessions.'
