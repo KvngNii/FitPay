@@ -106,8 +106,8 @@
 .landing .price-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;max-width:960px;}
 .landing .price-card{border:2px solid var(--ink);padding:40px 40px 44px;background:var(--bone);position:relative;}
 .landing .price-card::after{content:"";position:absolute;inset:0;transform:translate(10px,10px);border:2px solid var(--ochre);z-index:-1;}
-.landing .price-line{display:flex;align-items:baseline;gap:12px;margin:8px 0 22px;}
-.landing .price-amount{font-family:var(--mono);font-weight:600;font-size:46px;}
+.landing .price-line{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 12px;margin:8px 0 22px;}
+.landing .price-amount{font-family:var(--mono);font-weight:600;font-size:46px;white-space:nowrap;}
 .landing .price-per{font-family:var(--mono);font-size:13px;color:var(--concrete);}
 .landing .price-list{list-style:none;display:grid;gap:10px;font-size:15px;}
 .landing .price-list li{padding-left:24px;position:relative;}
