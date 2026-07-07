@@ -94,6 +94,29 @@
   .section-label {
     @apply text-sm font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5;
   }
+
+  /* Loading skeleton with a subtle shimmer sweep */
+  .skeleton {
+    @apply relative overflow-hidden bg-slate-800/50 rounded-lg;
+  }
+  .skeleton::after {
+    content: '';
+    @apply absolute inset-0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(148, 163, 184, 0.08),
+      transparent
+    );
+    animation: skeleton-shimmer 1.5s infinite;
+  }
+}
+
+@keyframes skeleton-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 @layer utilities {
