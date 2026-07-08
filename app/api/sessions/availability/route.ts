@@ -39,10 +39,18 @@ export async function GET(req: NextRequest) {
     })
   }
 
-  // Client: which slots are taken (any scheduled session), and which are theirs.
+  // Client: which slots are taken on THEIR trainer's calendar, and which are
+  // theirs. Scoped by trainer_id so one trainer's bookings don't block slots
+  // on another trainer's calendar.
+  const { data: client } = await admin.from('users').select('trainer_id').eq('id', user.id).single()
+  if (!client?.trainer_id) {
+    return NextResponse.json({ booked: [], mine: [] })
+  }
+
   const { data: sessions } = await admin
     .from('sessions')
     .select('scheduled_at, client_id')
+    .eq('trainer_id', client.trainer_id)
     .eq('status', 'scheduled')
     .gte('scheduled_at', from)
     .lte('scheduled_at', to)
