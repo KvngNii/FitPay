@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient, createAdminSupabaseClient } from '@/lib/supabase/server'
+import { internalHeaders } from '@/lib/internal'
 
 // Trainer rejects a pending refund_request. No money moves.
 export async function POST(req: NextRequest) {
@@ -52,7 +53,7 @@ export async function POST(req: NextRequest) {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL!
     fetch(`${appUrl}/api/sms/send`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: internalHeaders(),
       body: JSON.stringify({
         to: client.phone,
         message: `Hi ${client.name}, your refund request has been reviewed by your trainer. Please contact them directly for more details. Sent by FitPay`,

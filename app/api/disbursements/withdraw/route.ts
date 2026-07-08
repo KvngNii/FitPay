@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
       reference: `FitPay withdrawal for ${profile.name}`,
       accountnumber: MOOLRE_ACCOUNT,
     })
-    console.log('Moolre transfer response:', JSON.stringify(transferRes))
+    console.log('Moolre withdrawal status:', transferRes.status)
   } catch (err) {
     console.error('Moolre transfer failed:', err)
     await admin.from('disbursements').update({ status: 'failed' }).eq('moolre_ref', externalref)

@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabaseClient } from '@/lib/supabase/server'
 import { callClaude } from '@/lib/ai/claude'
+import { rejectIfNotInternal, internalHeaders } from '@/lib/internal'
 
 export async function POST(req: NextRequest) {
+  const blocked = rejectIfNotInternal(req)
+  if (blocked) return blocked
+
   // Accepts optional client_id to check in a single client; otherwise processes all active clients
   const body = await req.json().catch(() => ({}))
   const { client_id } = body
@@ -80,7 +84,7 @@ Return ONLY the SMS text, no quotes or labels.`
     if (client.phone) {
       fetch(`${appUrl}/api/sms/send`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: internalHeaders(),
         body: JSON.stringify({ to: client.phone, message }),
       }).catch(() => {})
       sent++

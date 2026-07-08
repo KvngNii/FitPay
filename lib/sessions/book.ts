@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { internalHeaders } from '@/lib/internal'
 
 type BookSessionInput = {
   client_id: string
@@ -77,7 +78,7 @@ export async function bookSession(
     const appUrl = process.env.NEXT_PUBLIC_APP_URL!
     fetch(`${appUrl}/api/sms/send`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: internalHeaders(),
       body: JSON.stringify({ to: client.phone, message: msg.slice(0, 160) }),
     }).catch(() => {})
   }

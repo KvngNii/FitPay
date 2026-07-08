@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabaseClient } from '@/lib/supabase/server'
 import { callClaude } from '@/lib/ai/claude'
+import { rejectIfNotInternal, internalHeaders } from '@/lib/internal'
 
 export async function POST(req: NextRequest) {
+  const blocked = rejectIfNotInternal(req)
+  if (blocked) return blocked
+
   const { client_id } = await req.json()
   if (!client_id) return NextResponse.json({ error: 'client_id required' }, { status: 400 })
 
@@ -63,7 +67,7 @@ Write 2 encouraging sentences about their progress and one specific thing to foc
     const message = report.slice(0, 155) + (report.length > 155 ? '…' : '')
     fetch(`${appUrl}/api/sms/send`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: internalHeaders(),
       body: JSON.stringify({ to: client.phone, message }),
     }).catch(() => {})
   }

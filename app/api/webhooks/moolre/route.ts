@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabaseClient } from '@/lib/supabase/server'
+import { internalHeaders } from '@/lib/internal'
 import type { MoolreWebhookPayload } from '@/types'
 
 // Always return HTTP 200 - Moolre retries on any non-200 response.
@@ -13,10 +14,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ received: true })
     }
 
-    // Verify the secret matches our wallet secret
+    // Verify the secret matches our wallet secret. Fail closed: if the secret
+    // is not configured, refuse to process (an unauthenticated webhook could
+    // otherwise forge a paid confirmation and activate a purchase for free).
     const webhookSecret = process.env.MOOLRE_WEBHOOK_SECRET
-    if (webhookSecret && payload.data?.secret !== webhookSecret) {
-      console.error('Webhook: secret mismatch')
+    if (!webhookSecret || payload.data?.secret !== webhookSecret) {
+      console.error('Webhook: secret missing or mismatch — ignoring')
       return NextResponse.json({ received: true })
     }
 
@@ -60,7 +63,7 @@ export async function POST(req: NextRequest) {
       const appUrl = process.env.NEXT_PUBLIC_APP_URL!
       fetch(`${appUrl}/api/sms/send`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: internalHeaders(),
         body: JSON.stringify({
           to: client.phone,
           message: `Hi ${client.name}! Your ${pkg.name} (${pkg.sessions} sessions) is now active on FitPay. Let's get to work!`,

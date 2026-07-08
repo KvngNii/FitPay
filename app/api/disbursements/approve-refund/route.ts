@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { randomUUID } from 'crypto'
 import { createServerSupabaseClient, createAdminSupabaseClient } from '@/lib/supabase/server'
 import { moolrePost, MOOLRE_ACCOUNT } from '@/lib/moolre'
+import { internalHeaders } from '@/lib/internal'
 
 const NETWORK_CHANNELS: Record<string, string> = {
   mtn: '1',
@@ -92,7 +93,7 @@ export async function POST(req: NextRequest) {
       reference: `FitPay refund for ${client.name}`,
       accountnumber: MOOLRE_ACCOUNT,
     })
-    console.log('Moolre refund transfer response:', JSON.stringify(transferRes))
+    console.log('Moolre refund status:', transferRes.status)
   } catch (err) {
     console.error('Moolre transfer failed on refund approval:', err)
     await admin.from('disbursements').update({ status: 'failed' }).eq('moolre_ref', externalref)
@@ -135,7 +136,7 @@ export async function POST(req: NextRequest) {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL!
   fetch(`${appUrl}/api/sms/send`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: internalHeaders(),
     body: JSON.stringify({
       to: client.phone,
       message: `Hi ${client.name}, your FitPay refund of GH₵${amountNum} for ${sessionsRequested} ${sessionWord} has been approved and is on its way to your mobile money. Sent by FitPay`,

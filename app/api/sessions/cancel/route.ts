@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient, createAdminSupabaseClient } from '@/lib/supabase/server'
+import { internalHeaders } from '@/lib/internal'
 
 export async function POST(req: NextRequest) {
   const auth = createServerSupabaseClient()
@@ -50,7 +51,7 @@ export async function POST(req: NextRequest) {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL!
     fetch(`${appUrl}/api/sms/send`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: internalHeaders(),
       body: JSON.stringify({
         to: client.phone,
         message: `Hi ${client.name}, your upcoming session has been cancelled. Your session credit has been returned. Sent by FitPay`,

@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { moolreSms } from '@/lib/moolre'
+import { rejectIfNotInternal } from '@/lib/internal'
 
 // Sends a single SMS via Moolre SMS API.
-// Called internally by webhook and pg_cron - not exposed to clients directly.
+// Internal only — server-to-server calls must carry the internal secret so this
+// cannot be abused as an open SMS relay under our sender ID.
 // Body: { to: string, message: string }
 export async function POST(req: NextRequest) {
+  const blocked = rejectIfNotInternal(req)
+  if (blocked) return blocked
+
   const { to, message } = await req.json()
 
   if (!to || !message) {

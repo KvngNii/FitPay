@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient, createAdminSupabaseClient } from '@/lib/supabase/server'
+import { internalHeaders } from '@/lib/internal'
 
 export async function POST(req: NextRequest) {
   const auth = createServerSupabaseClient()
@@ -69,13 +70,13 @@ export async function POST(req: NextRequest) {
   if (injury_flag) {
     fetch(`${appUrl}/api/ai/adapt`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: internalHeaders(),
       body: JSON.stringify({ session_id, client_id: session.client_id, injury_notes }),
     }).catch(() => {})
   } else {
     fetch(`${appUrl}/api/engine/progress`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: internalHeaders(),
       body: JSON.stringify({ session_id, client_id: session.client_id }),
     }).catch(() => {})
   }
@@ -84,7 +85,7 @@ export async function POST(req: NextRequest) {
   if (newSessionsInPhase % 4 === 0) {
     fetch(`${appUrl}/api/ai/report`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: internalHeaders(),
       body: JSON.stringify({ session_id, client_id: session.client_id }),
     }).catch(() => {})
   }
