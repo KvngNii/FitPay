@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { MedicalHistoryFields, EMPTY_MEDICAL_HISTORY, type MedicalHistoryFormState } from '@/components/MedicalHistoryFields'
+import { GoalSelector } from '@/components/GoalSelector'
 import DeleteAccountButton from '@/components/DeleteAccountButton'
 import Image from 'next/image'
 import { Camera } from 'lucide-react'
@@ -18,7 +19,7 @@ export default function ProfilePage() {
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
-  const [goal, setGoal] = useState<FitnessGoal>('general')
+  const [goals, setGoals] = useState<FitnessGoal[]>(['general'])
   const [fitnessLevel, setFitnessLevel] = useState<FitnessLevel>('beginner')
   const [dateOfBirth, setDateOfBirth] = useState('')
   const [gender, setGender] = useState<Gender>('prefer_not_to_say')
@@ -56,7 +57,8 @@ export default function ProfilePage() {
         setName(profile.name ?? '')
         setPhone(profile.phone ?? '')
         setEmail(profile.email ?? '')
-        setGoal((profile.goal as FitnessGoal) ?? 'general')
+        const loadedGoals = (profile as { goals?: FitnessGoal[] | null }).goals
+        setGoals(loadedGoals && loadedGoals.length > 0 ? loadedGoals : [(profile.goal as FitnessGoal) ?? 'general'])
         setFitnessLevel((profile.fitness_level as FitnessLevel) ?? 'beginner')
         setDateOfBirth(profile.date_of_birth ?? '')
         setGender((profile.gender as Gender) ?? 'prefer_not_to_say')
@@ -137,7 +139,8 @@ export default function ProfilePage() {
       .update({
         name,
         phone,
-        goal,
+        goal: goals[0],
+        goals,
         fitness_level: fitnessLevel,
         date_of_birth: dateOfBirth || null,
         gender,
@@ -297,15 +300,7 @@ export default function ProfilePage() {
           <p className="text-sm font-semibold text-slate-300 mt-3 mb-3">Training profile</p>
         </div>
 
-        <div>
-          <label htmlFor="goal">Fitness goal</label>
-          <select id="goal" value={goal} onChange={(e) => setGoal(e.target.value as FitnessGoal)}>
-            <option value="general">General fitness</option>
-            <option value="weight_loss">Weight loss</option>
-            <option value="strength">Strength</option>
-            <option value="endurance">Endurance</option>
-          </select>
-        </div>
+        <GoalSelector value={goals} onChange={setGoals} />
 
         <div>
           <label htmlFor="fitness_level">Fitness level</label>

@@ -6,6 +6,8 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import { GoalSelector } from '@/components/GoalSelector'
+import { MedicalHistoryFields, EMPTY_MEDICAL_HISTORY, type MedicalHistoryFormState } from '@/components/MedicalHistoryFields'
 import type { FitnessGoal, FitnessLevel, Gender, UserRole } from '@/types'
 
 export default function SignupPage() {
@@ -18,7 +20,7 @@ export default function SignupPage() {
   const [password, setPassword] = useState('')
   const [trainerId, setTrainerId] = useState('')
   const [trainers, setTrainers] = useState<{ id: string; name: string }[]>([])
-  const [goal, setGoal] = useState<FitnessGoal>('general')
+  const [goals, setGoals] = useState<FitnessGoal[]>(['general'])
   const [fitnessLevel, setFitnessLevel] = useState<FitnessLevel>('beginner')
   const [dateOfBirth, setDateOfBirth] = useState('')
   const [gender, setGender] = useState<Gender>('prefer_not_to_say')
@@ -26,6 +28,7 @@ export default function SignupPage() {
   const [weightKg, setWeightKg] = useState('')
   const [emergencyContactName, setEmergencyContactName] = useState('')
   const [emergencyContactPhone, setEmergencyContactPhone] = useState('')
+  const [medical, setMedical] = useState<MedicalHistoryFormState>(EMPTY_MEDICAL_HISTORY)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -53,6 +56,10 @@ export default function SignupPage() {
       setError('Please choose your trainer.')
       return
     }
+    if (role === 'client' && !medical.consent_acknowledged) {
+      setError('Please confirm the physical activity clearance declaration before continuing.')
+      return
+    }
 
     setLoading(true)
 
@@ -73,7 +80,8 @@ export default function SignupPage() {
       email,
       role,
       trainer_id: role === 'client' ? trainerId : null,
-      goal: role === 'client' ? goal : null,
+      goal: role === 'client' ? goals[0] : null,
+      goals: role === 'client' ? goals : [],
       fitness_level: role === 'client' ? fitnessLevel : null,
       date_of_birth: role === 'client' && dateOfBirth ? dateOfBirth : null,
       gender: role === 'client' ? gender : null,
@@ -89,7 +97,44 @@ export default function SignupPage() {
       return
     }
 
-    router.push(role === 'trainer' ? '/trainer/dashboard' : '/onboarding/medical-history')
+    if (role === 'trainer') {
+      router.push('/trainer/dashboard')
+      return
+    }
+
+    // Client: record the physical activity clearance + medical/injury history
+    // right here, so there's no separate onboarding step after signup.
+    const { error: medicalError } = await supabase.from('medical_history').upsert({
+      client_id: data.user.id,
+      heart_condition_or_bp: medical.heart_condition_or_bp,
+      chest_pain: medical.chest_pain,
+      dizziness_or_consciousness: medical.dizziness_or_consciousness,
+      chronic_condition: medical.chronic_condition,
+      chronic_condition_details: medical.chronic_condition ? medical.chronic_condition_details : null,
+      prescribed_medication: medical.prescribed_medication,
+      medication_details: medical.prescribed_medication ? medical.medication_details : null,
+      bone_or_joint_problem: medical.bone_or_joint_problem,
+      bone_or_joint_details: medical.bone_or_joint_problem ? medical.bone_or_joint_details : null,
+      previous_injuries_surgeries: medical.previous_injuries_surgeries || null,
+      current_pain_areas: medical.current_pain_areas || null,
+      allergies: medical.allergies || null,
+      additional_notes: medical.additional_notes || null,
+      consent_acknowledged: true,
+      consent_acknowledged_at: new Date().toISOString(),
+      valid_until: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+      updated_at: new Date().toISOString(),
+    }, { onConflict: 'client_id' })
+
+    if (medicalError) {
+      setError(medicalError.message)
+      setLoading(false)
+      return
+    }
+
+    // Fire onboarding AI trigger now that goals/injuries are known (non-blocking)
+    fetch('/api/ai/onboard', { method: 'POST' }).catch(() => {})
+
+    router.push('/client/dashboard')
   }
 
   return (
@@ -208,15 +253,7 @@ export default function SignupPage() {
                   <p className="text-sm font-semibold text-slate-300 mt-1 mb-3">Training profile</p>
                 </div>
 
-                <div>
-                  <label htmlFor="goal">Fitness goal</label>
-                  <select id="goal" value={goal} onChange={(e) => setGoal(e.target.value as FitnessGoal)}>
-                    <option value="general">General fitness</option>
-                    <option value="weight_loss">Weight loss</option>
-                    <option value="strength">Strength</option>
-                    <option value="endurance">Endurance</option>
-                  </select>
-                </div>
+                <GoalSelector value={goals} onChange={setGoals} />
 
                 <div>
                   <label htmlFor="fitness_level">Fitness level</label>
@@ -268,12 +305,21 @@ export default function SignupPage() {
                     <input id="ec_phone" type="tel" placeholder="0244000000" value={emergencyContactPhone} onChange={(e) => setEmergencyContactPhone(e.target.value)} required />
                   </div>
                 </div>
+
+                <div className="pt-3 border-t border-slate-800">
+                  <p className="text-sm font-semibold text-slate-300 mt-1 mb-1">Medical &amp; injury history</p>
+                  <p className="text-xs text-slate-500 mb-3">
+                    Your trainer needs this before your first session so your plan is safe for you.
+                  </p>
+                </div>
+
+                <MedicalHistoryFields value={medical} onChange={setMedical} />
               </>
             )}
 
             {role === 'trainer' && (
               <p className="text-xs text-slate-500 pt-1">
-                You&apos;ll land on your trainer dashboard right away — no client profile needed.
+                You&apos;ll land on your trainer dashboard right away, no client profile needed.
               </p>
             )}
 

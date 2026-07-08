@@ -19,6 +19,7 @@ export type User = {
   role: UserRole
   trainer_id: string | null
   goal: FitnessGoal | null
+  goals: FitnessGoal[]
   fitness_level: FitnessLevel | null
   date_of_birth: string | null
   gender: Gender | null
