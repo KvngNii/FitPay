@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Dumbbell, ChevronDown, ChevronUp, Zap, FlameKindling } from 'lucide-react'
 import AddToCalendar from '@/components/AddToCalendar'
+import CancelSessionButton from '@/components/CancelSessionButton'
 import type { ExerciseEntry } from '@/types'
 
 function useCountdown(target: Date) {
@@ -66,14 +67,17 @@ export default function UpcomingSessionCard({ session, nextPlan, isNext }: Props
 
   if (!isNext) {
     return (
-      <div className="card flex items-center justify-between">
+      <div className="card flex items-center justify-between gap-3">
         <div>
           <p className="font-medium text-slate-50">{dateStr}</p>
           <p className="text-sm text-slate-400">{timeStr}</p>
         </div>
-        <span className="text-xs text-slate-500 bg-slate-800 border border-slate-700 px-2 py-1 rounded-full">
-          {days}d away
-        </span>
+        <div className="flex flex-col items-end gap-1.5 shrink-0">
+          <span className="text-xs text-slate-500 bg-slate-800 border border-slate-700 px-2 py-1 rounded-full">
+            {days}d away
+          </span>
+          <CancelSessionButton sessionId={session.id} />
+        </div>
       </div>
     )
   }
@@ -171,8 +175,9 @@ export default function UpcomingSessionCard({ session, nextPlan, isNext }: Props
           </p>
         )}
 
-        <div className="mt-4 pt-4 border-t border-slate-800/80">
+        <div className="mt-4 pt-4 border-t border-slate-800/80 flex items-center justify-between gap-3">
           <AddToCalendar sessionId={session.id} scheduledAt={session.scheduled_at} />
+          {!isPast && <CancelSessionButton sessionId={session.id} />}
         </div>
       </div>
     </div>

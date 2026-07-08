@@ -4,6 +4,7 @@ import { CalendarDays } from 'lucide-react'
 import ClientCalendar from './ClientCalendar'
 import UpcomingSessionCard from '../book/UpcomingSessionCard'
 import AddToCalendar from '@/components/AddToCalendar'
+import CancelSessionButton from '@/components/CancelSessionButton'
 import type { ExerciseEntry } from '@/types'
 
 export const dynamic = 'force-dynamic'
@@ -89,7 +90,10 @@ export default async function CalendarPage() {
                       <p className="font-medium text-slate-50">{dateStr}</p>
                       <p className="text-sm text-slate-400">{timeStr}</p>
                     </div>
-                    <AddToCalendar sessionId={s.id} scheduledAt={s.scheduled_at} compact />
+                    <div className="flex flex-col items-end gap-1.5">
+                      <AddToCalendar sessionId={s.id} scheduledAt={s.scheduled_at} compact />
+                      <CancelSessionButton sessionId={s.id} />
+                    </div>
                   </div>
                 </div>
               )
