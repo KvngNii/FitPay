@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { ChevronLeft } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { GoalSelector } from '@/components/GoalSelector'
 import { MedicalHistoryFields, EMPTY_MEDICAL_HISTORY, type MedicalHistoryFormState } from '@/components/MedicalHistoryFields'
@@ -12,6 +13,10 @@ import type { FitnessGoal, FitnessLevel, Gender, UserRole } from '@/types'
 
 export default function SignupPage() {
   const router = useRouter()
+
+  // Clients fill account + training details on step 1, then medical/injury
+  // history + the clearance declaration on step 2. Trainers have no step 2.
+  const [step, setStep] = useState<1 | 2>(1)
 
   const [role, setRole] = useState<UserRole>('client')
   const [name, setName] = useState('')
@@ -48,14 +53,26 @@ export default function SignupPage() {
       .catch(() => setTrainers([]))
   }, [role])
 
-  async function handleSignup(e: React.FormEvent) {
+  function selectRole(r: UserRole) {
+    setRole(r)
+    setStep(1)
+  }
+
+  async function handleFormSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
 
-    if (role === 'client' && !trainerId) {
-      setError('Please choose your trainer.')
+    // Step 1 -> step 2 for clients: the browser has already enforced every
+    // `required` field on this step, so just advance to medical history.
+    if (role === 'client' && step === 1) {
+      if (!trainerId) {
+        setError('Please choose your trainer.')
+        return
+      }
+      setStep(2)
       return
     }
+
     if (role === 'client' && !medical.consent_acknowledged) {
       setError('Please confirm the physical activity clearance declaration before continuing.')
       return
@@ -137,6 +154,8 @@ export default function SignupPage() {
     router.push('/client/dashboard')
   }
 
+  const showStepper = role === 'client'
+
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12 relative overflow-hidden">
       <div
@@ -154,160 +173,194 @@ export default function SignupPage() {
         </div>
 
         <div className="card px-6 py-7">
-          <form onSubmit={handleSignup} className="space-y-4">
-
-            <div>
-              <label>I am a</label>
-              <div className="grid grid-cols-2 gap-3 mt-1">
-                {(['client', 'trainer'] as UserRole[]).map((r) => (
-                  <button
-                    key={r}
-                    type="button"
-                    onClick={() => setRole(r)}
-                    className={`py-3 rounded-lg border font-medium capitalize transition-all duration-200 ${
-                      role === r
-                        ? 'border-emerald-500 bg-emerald-500/10 text-emerald-400 shadow-md shadow-emerald-500/10'
-                        : 'border-slate-700 bg-slate-800/60 text-slate-400 hover:border-slate-600 hover:text-slate-300'
+          {showStepper && (
+            <div className="flex items-center gap-2 mb-6">
+              {([1, 2] as const).map((s) => (
+                <div key={s} className="flex-1 flex items-center gap-2">
+                  <div
+                    className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 transition-colors ${
+                      step >= s ? 'bg-emerald-500 text-slate-950' : 'bg-slate-800 text-slate-500 border border-slate-700'
                     }`}
                   >
-                    {r}
-                  </button>
-                ))}
-              </div>
+                    {s}
+                  </div>
+                  <span className={`text-xs font-medium ${step >= s ? 'text-slate-300' : 'text-slate-500'}`}>
+                    {s === 1 ? 'Your details' : 'Medical history'}
+                  </span>
+                  {s === 1 && <div className={`flex-1 h-px ${step >= 2 ? 'bg-emerald-500' : 'bg-slate-800'}`} />}
+                </div>
+              ))}
             </div>
+          )}
 
-            <div>
-              <label htmlFor="name">Full name</label>
-              <input
-                id="name"
-                type="text"
-                placeholder="Kofi Mensah"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
-            </div>
+          <form onSubmit={handleFormSubmit} className="space-y-4">
 
-            <div>
-              <label htmlFor="phone">Phone number</label>
-              <input
-                id="phone"
-                type="tel"
-                placeholder="0244000000"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                required
-              />
-            </div>
-
-            <div>
-              <label htmlFor="email">Email</label>
-              <input
-                id="email"
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-
-            <div>
-              <label htmlFor="password">Password</label>
-              <input
-                id="password"
-                type="password"
-                placeholder="Min 8 characters"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={8}
-              />
-            </div>
-
-            {role === 'client' && (
+            {step === 1 && (
               <>
-                <div className="pt-3 border-t border-slate-800">
-                  <p className="text-sm font-semibold text-slate-300 mt-1 mb-3">Your trainer</p>
-                </div>
-
                 <div>
-                  <label htmlFor="trainer">Who do you train with?</label>
-                  <select
-                    id="trainer"
-                    value={trainerId}
-                    onChange={(e) => setTrainerId(e.target.value)}
-                    required
-                  >
-                    <option value="" disabled>Select your trainer</option>
-                    {trainers.map((t) => (
-                      <option key={t.id} value={t.id}>{t.name}</option>
+                  <label>I am a</label>
+                  <div className="grid grid-cols-2 gap-3 mt-1">
+                    {(['client', 'trainer'] as UserRole[]).map((r) => (
+                      <button
+                        key={r}
+                        type="button"
+                        onClick={() => selectRole(r)}
+                        className={`py-3 rounded-lg border font-medium capitalize transition-all duration-200 ${
+                          role === r
+                            ? 'border-emerald-500 bg-emerald-500/10 text-emerald-400 shadow-md shadow-emerald-500/10'
+                            : 'border-slate-700 bg-slate-800/60 text-slate-400 hover:border-slate-600 hover:text-slate-300'
+                        }`}
+                      >
+                        {r}
+                      </button>
                     ))}
-                  </select>
-                  {trainers.length === 0 && (
-                    <p className="text-xs text-slate-500 mt-1">No trainers are available yet. Please check back soon.</p>
-                  )}
+                  </div>
                 </div>
-
-                <div className="pt-3 border-t border-slate-800">
-                  <p className="text-sm font-semibold text-slate-300 mt-1 mb-3">Training profile</p>
-                </div>
-
-                <GoalSelector value={goals} onChange={setGoals} />
 
                 <div>
-                  <label htmlFor="fitness_level">Fitness level</label>
-                  <select id="fitness_level" value={fitnessLevel} onChange={(e) => setFitnessLevel(e.target.value as FitnessLevel)}>
-                    <option value="beginner">Beginner</option>
-                    <option value="intermediate">Intermediate</option>
-                    <option value="advanced">Advanced</option>
-                  </select>
+                  <label htmlFor="name">Full name</label>
+                  <input
+                    id="name"
+                    type="text"
+                    placeholder="Kofi Mensah"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                  />
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label htmlFor="dob">Date of birth</label>
-                    <input id="dob" type="date" value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} required />
-                  </div>
-                  <div>
-                    <label htmlFor="gender">Gender</label>
-                    <select id="gender" value={gender} onChange={(e) => setGender(e.target.value as Gender)}>
-                      <option value="female">Female</option>
-                      <option value="male">Male</option>
-                      <option value="other">Other</option>
-                      <option value="prefer_not_to_say">Prefer not to say</option>
-                    </select>
-                  </div>
+                <div>
+                  <label htmlFor="phone">Phone number</label>
+                  <input
+                    id="phone"
+                    type="tel"
+                    placeholder="0244000000"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    required
+                  />
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label htmlFor="height">Height (cm)</label>
-                    <input id="height" type="number" placeholder="170" min="50" max="250" step="0.1" value={heightCm} onChange={(e) => setHeightCm(e.target.value)} required />
-                  </div>
-                  <div>
-                    <label htmlFor="weight">Weight (kg)</label>
-                    <input id="weight" type="number" placeholder="70" min="20" max="300" step="0.1" value={weightKg} onChange={(e) => setWeightKg(e.target.value)} required />
-                  </div>
+                <div>
+                  <label htmlFor="email">Email</label>
+                  <input
+                    id="email"
+                    type="email"
+                    placeholder="you@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
                 </div>
 
-                <div className="pt-3 border-t border-slate-800">
-                  <p className="text-sm font-semibold text-slate-300 mt-1 mb-3">Emergency contact</p>
+                <div>
+                  <label htmlFor="password">Password</label>
+                  <input
+                    id="password"
+                    type="password"
+                    placeholder="Min 8 characters"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    minLength={8}
+                  />
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label htmlFor="ec_name">Contact name</label>
-                    <input id="ec_name" type="text" placeholder="Ama Mensah" value={emergencyContactName} onChange={(e) => setEmergencyContactName(e.target.value)} required />
-                  </div>
-                  <div>
-                    <label htmlFor="ec_phone">Contact phone</label>
-                    <input id="ec_phone" type="tel" placeholder="0244000000" value={emergencyContactPhone} onChange={(e) => setEmergencyContactPhone(e.target.value)} required />
-                  </div>
-                </div>
+                {role === 'client' && (
+                  <>
+                    <div className="pt-3 border-t border-slate-800">
+                      <p className="text-sm font-semibold text-slate-300 mt-1 mb-3">Your trainer</p>
+                    </div>
 
-                <div className="pt-3 border-t border-slate-800">
-                  <p className="text-sm font-semibold text-slate-300 mt-1 mb-1">Medical &amp; injury history</p>
+                    <div>
+                      <label htmlFor="trainer">Who do you train with?</label>
+                      <select
+                        id="trainer"
+                        value={trainerId}
+                        onChange={(e) => setTrainerId(e.target.value)}
+                        required
+                      >
+                        <option value="" disabled>Select your trainer</option>
+                        {trainers.map((t) => (
+                          <option key={t.id} value={t.id}>{t.name}</option>
+                        ))}
+                      </select>
+                      {trainers.length === 0 && (
+                        <p className="text-xs text-slate-500 mt-1">No trainers are available yet. Please check back soon.</p>
+                      )}
+                    </div>
+
+                    <div className="pt-3 border-t border-slate-800">
+                      <p className="text-sm font-semibold text-slate-300 mt-1 mb-3">Training profile</p>
+                    </div>
+
+                    <GoalSelector value={goals} onChange={setGoals} />
+
+                    <div>
+                      <label htmlFor="fitness_level">Fitness level</label>
+                      <select id="fitness_level" value={fitnessLevel} onChange={(e) => setFitnessLevel(e.target.value as FitnessLevel)}>
+                        <option value="beginner">Beginner</option>
+                        <option value="intermediate">Intermediate</option>
+                        <option value="advanced">Advanced</option>
+                      </select>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label htmlFor="dob">Date of birth</label>
+                        <input id="dob" type="date" value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} required />
+                      </div>
+                      <div>
+                        <label htmlFor="gender">Gender</label>
+                        <select id="gender" value={gender} onChange={(e) => setGender(e.target.value as Gender)}>
+                          <option value="female">Female</option>
+                          <option value="male">Male</option>
+                          <option value="other">Other</option>
+                          <option value="prefer_not_to_say">Prefer not to say</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label htmlFor="height">Height (cm)</label>
+                        <input id="height" type="number" placeholder="170" min="50" max="250" step="0.1" value={heightCm} onChange={(e) => setHeightCm(e.target.value)} required />
+                      </div>
+                      <div>
+                        <label htmlFor="weight">Weight (kg)</label>
+                        <input id="weight" type="number" placeholder="70" min="20" max="300" step="0.1" value={weightKg} onChange={(e) => setWeightKg(e.target.value)} required />
+                      </div>
+                    </div>
+
+                    <div className="pt-3 border-t border-slate-800">
+                      <p className="text-sm font-semibold text-slate-300 mt-1 mb-3">Emergency contact</p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label htmlFor="ec_name">Contact name</label>
+                        <input id="ec_name" type="text" placeholder="Ama Mensah" value={emergencyContactName} onChange={(e) => setEmergencyContactName(e.target.value)} required />
+                      </div>
+                      <div>
+                        <label htmlFor="ec_phone">Contact phone</label>
+                        <input id="ec_phone" type="tel" placeholder="0244000000" value={emergencyContactPhone} onChange={(e) => setEmergencyContactPhone(e.target.value)} required />
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {role === 'trainer' && (
+                  <p className="text-xs text-slate-500 pt-1">
+                    You&apos;ll land on your trainer dashboard right away, no client profile needed.
+                  </p>
+                )}
+              </>
+            )}
+
+            {role === 'client' && step === 2 && (
+              <>
+                <div>
+                  <p className="text-sm font-semibold text-slate-300 mb-1">Medical &amp; injury history</p>
                   <p className="text-xs text-slate-500 mb-3">
                     Your trainer needs this before your first session so your plan is safe for you.
                   </p>
@@ -317,17 +370,26 @@ export default function SignupPage() {
               </>
             )}
 
-            {role === 'trainer' && (
-              <p className="text-xs text-slate-500 pt-1">
-                You&apos;ll land on your trainer dashboard right away, no client profile needed.
-              </p>
-            )}
-
             {error && <p className="text-red-400 text-sm text-center">{error}</p>}
 
-            <div className="pt-1">
+            <div className="pt-1 flex gap-2">
+              {role === 'client' && step === 2 && (
+                <button
+                  type="button"
+                  onClick={() => { setError(null); setStep(1) }}
+                  className="btn-secondary !w-auto px-4 flex items-center gap-1 shrink-0"
+                  disabled={loading}
+                >
+                  <ChevronLeft size={16} />
+                  Back
+                </button>
+              )}
               <button type="submit" className="btn-primary" disabled={loading}>
-                {loading ? 'Creating account...' : 'Create account'}
+                {loading
+                  ? 'Creating account...'
+                  : role === 'client' && step === 1
+                    ? 'Next'
+                    : 'Create account'}
               </button>
             </div>
           </form>
