@@ -5,15 +5,20 @@
 -- Uses the "http" extension (already enabled in 001_initial_schema.sql), not
 -- pg_net, since that's what this project has installed.
 --
--- The internal secret and app URL are read from Postgres settings rather than
--- hardcoded here, so this file has no secret in it. Set them once via the
--- Supabase SQL editor (run as separate statements — NOT committed to a
--- migration file):
+-- Supabase's managed "postgres" role is not a true superuser, so
+-- `ALTER DATABASE ... SET app.foo = ...` is rejected with a permission error.
+-- The secret must instead be stored in Supabase Vault, which pg_cron jobs can
+-- read at call time. Run this BEFORE the cron.schedule() below, once, via the
+-- Supabase SQL editor (replace the placeholder with the real secret):
 --
---   ALTER DATABASE postgres SET app.internal_api_secret = 'paste-the-secret-here';
---   ALTER DATABASE postgres SET app.app_url = 'https://your-fitpay-domain.vercel.app';
+--   SELECT vault.create_secret(
+--     'REPLACE_WITH_INTERNAL_API_SECRET',
+--     'internal_api_secret',
+--     'Shared secret for FitPay internal API routes'
+--   );
 --
--- Then run `SELECT pg_reload_conf();` for the new settings to take effect.
+-- The app URL is not sensitive, so it is inlined directly below — replace
+-- YOUR_APP_URL_HERE with your real deployed domain before running this file.
 
 SELECT cron.schedule(
   'monthly-client-checkin',
@@ -21,10 +26,13 @@ SELECT cron.schedule(
   $$
   SELECT http((
     'POST',
-    current_setting('app.app_url', true) || '/api/ai/checkin',
+    'YOUR_APP_URL_HERE/api/ai/checkin',
     ARRAY[
       http_header('Content-Type', 'application/json'),
-      http_header('x-internal-secret', current_setting('app.internal_api_secret', true))
+      http_header(
+        'x-internal-secret',
+        (SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name = 'internal_api_secret')
+      )
     ],
     'application/json',
     '{}'
