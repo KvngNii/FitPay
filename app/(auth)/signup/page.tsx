@@ -6,15 +6,12 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import type { FitnessGoal, FitnessLevel, Gender } from '@/types'
+import type { FitnessGoal, FitnessLevel, Gender, UserRole } from '@/types'
 
 export default function SignupPage() {
   const router = useRouter()
 
-  // Self-service signup creates client accounts only. Trainer accounts are
-  // provisioned out-of-band; the users RLS policy also enforces this.
-  const role = 'client' as const
-
+  const [role, setRole] = useState<UserRole>('client')
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
@@ -32,13 +29,21 @@ export default function SignupPage() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
+  // Preselect the role from ?role=trainer (used by the trainer-facing
+  // marketing homepage) without requiring a useSearchParams Suspense boundary.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('role') === 'trainer') setRole('trainer')
+  }, [])
+
   // Load the list of trainers so a client can pick who they train with.
   useEffect(() => {
+    if (role !== 'client') return
     fetch('/api/trainers')
       .then((r) => r.json())
       .then((d) => setTrainers(d.trainers ?? []))
       .catch(() => setTrainers([]))
-  }, [])
+  }, [role])
 
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault()
@@ -67,15 +72,15 @@ export default function SignupPage() {
       phone,
       email,
       role,
-      trainer_id: trainerId,
-      goal,
-      fitness_level: fitnessLevel,
-      date_of_birth: dateOfBirth || null,
-      gender,
-      height_cm: heightCm ? Number(heightCm) : null,
-      weight_kg: weightKg ? Number(weightKg) : null,
-      emergency_contact_name: emergencyContactName || null,
-      emergency_contact_phone: emergencyContactPhone || null,
+      trainer_id: role === 'client' ? trainerId : null,
+      goal: role === 'client' ? goal : null,
+      fitness_level: role === 'client' ? fitnessLevel : null,
+      date_of_birth: role === 'client' && dateOfBirth ? dateOfBirth : null,
+      gender: role === 'client' ? gender : null,
+      height_cm: role === 'client' && heightCm ? Number(heightCm) : null,
+      weight_kg: role === 'client' && weightKg ? Number(weightKg) : null,
+      emergency_contact_name: role === 'client' ? emergencyContactName || null : null,
+      emergency_contact_phone: role === 'client' ? emergencyContactPhone || null : null,
     })
 
     if (insertError) {
@@ -84,7 +89,7 @@ export default function SignupPage() {
       return
     }
 
-    router.push('/onboarding/medical-history')
+    router.push(role === 'trainer' ? '/trainer/dashboard' : '/onboarding/medical-history')
   }
 
   return (
@@ -105,6 +110,26 @@ export default function SignupPage() {
 
         <div className="card px-6 py-7">
           <form onSubmit={handleSignup} className="space-y-4">
+
+            <div>
+              <label>I am a</label>
+              <div className="grid grid-cols-2 gap-3 mt-1">
+                {(['client', 'trainer'] as UserRole[]).map((r) => (
+                  <button
+                    key={r}
+                    type="button"
+                    onClick={() => setRole(r)}
+                    className={`py-3 rounded-lg border font-medium capitalize transition-all duration-200 ${
+                      role === r
+                        ? 'border-emerald-500 bg-emerald-500/10 text-emerald-400 shadow-md shadow-emerald-500/10'
+                        : 'border-slate-700 bg-slate-800/60 text-slate-400 hover:border-slate-600 hover:text-slate-300'
+                    }`}
+                  >
+                    {r}
+                  </button>
+                ))}
+              </div>
+            </div>
 
             <div>
               <label htmlFor="name">Full name</label>
@@ -155,7 +180,8 @@ export default function SignupPage() {
               />
             </div>
 
-            <>
+            {role === 'client' && (
+              <>
                 <div className="pt-3 border-t border-slate-800">
                   <p className="text-sm font-semibold text-slate-300 mt-1 mb-3">Your trainer</p>
                 </div>
@@ -243,6 +269,13 @@ export default function SignupPage() {
                   </div>
                 </div>
               </>
+            )}
+
+            {role === 'trainer' && (
+              <p className="text-xs text-slate-500 pt-1">
+                You&apos;ll land on your trainer dashboard right away — no client profile needed.
+              </p>
+            )}
 
             {error && <p className="text-red-400 text-sm text-center">{error}</p>}
 

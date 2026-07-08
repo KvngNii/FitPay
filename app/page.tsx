@@ -43,7 +43,7 @@ export default function LandingPage() {
                 packages, with Moolre USSD, SMS and mobile money built in from day one, not bolted on later.
               </p>
               <div className="hero-cta-row">
-                <Link className="l-btn l-btn-primary" href="/signup">Create your free account</Link>
+                <Link className="l-btn l-btn-primary" href="/signup?role=trainer">Create your free account</Link>
                 <a className="l-btn l-btn-ghost" href="#how">See how it works</a>
               </div>
               <p className="hero-note" style={{ marginTop: 22 }}>
@@ -193,7 +193,7 @@ export default function LandingPage() {
             <span className="dial-code reveal">*919*4012#</span>
             <p className="reveal">That&apos;s the whole experience for your clients: book, check balance, buy sessions, from any phone. Yours is even shorter: create an account and start coaching on FitPay today.</p>
             <div className="final-cta-row reveal">
-              <Link className="l-btn l-btn-primary" href="/signup">Create your free account</Link>
+              <Link className="l-btn l-btn-primary" href="/signup?role=trainer">Create your free account</Link>
               <Link className="l-btn l-btn-ghost" href="/login">Log in</Link>
             </div>
             <div className="footer-meta">
