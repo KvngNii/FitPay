@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { redirect } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import {
@@ -67,7 +68,7 @@ export default async function ClientDashboard() {
 
   const [{ data: profile }, { data: activePurchases }, { data: nextSession }, { count: doneThisMonth }] =
     await Promise.all([
-      supabase.from('users').select('name').eq('id', user.id).single(),
+      supabase.from('users').select('name, avatar_url').eq('id', user.id).single(),
       supabase
         .from('purchases')
         .select('sessions_left')
@@ -108,7 +109,25 @@ export default async function ClientDashboard() {
           <p className="text-sm text-slate-400 mt-0.5">Welcome back, {firstName}</p>
         </div>
         <div className="flex items-center gap-4">
-          <Link href="/client/profile" className="text-sm text-slate-400 hover:text-slate-200 transition-colors">
+          <Link
+            href="/client/profile"
+            className="flex items-center gap-2 text-sm text-slate-400 hover:text-slate-200 transition-colors"
+          >
+            <span className="relative shrink-0 w-7 h-7 rounded-full overflow-hidden bg-gradient-to-br from-emerald-500/20 to-teal-400/10 border border-emerald-500/20 flex items-center justify-center">
+              {profile?.avatar_url ? (
+                <Image
+                  src={profile.avatar_url}
+                  alt={profile?.name ?? 'Profile'}
+                  fill
+                  className="object-cover"
+                  sizes="28px"
+                />
+              ) : (
+                <span className="text-[11px] font-bold text-emerald-400">
+                  {firstName.charAt(0).toUpperCase()}
+                </span>
+              )}
+            </span>
             Profile
           </Link>
           <SignOutButton />
