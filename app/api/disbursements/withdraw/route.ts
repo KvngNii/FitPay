@@ -49,6 +49,7 @@ export async function POST(req: NextRequest) {
     admin
       .from('purchases')
       .select('packages(price_ghs)')
+      .eq('trainer_id', user.id)
       .in('status', ['active', 'expired']),
     admin
       .from('disbursements')
