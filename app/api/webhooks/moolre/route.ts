@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
     // otherwise forge a paid confirmation and activate a purchase for free).
     const webhookSecret = process.env.MOOLRE_WEBHOOK_SECRET
     if (!webhookSecret || payload.data?.secret !== webhookSecret) {
-      console.error('Webhook: secret missing or mismatch — ignoring')
+      console.error('Webhook: secret missing or mismatch, ignoring')
       return NextResponse.json({ received: true })
     }
 

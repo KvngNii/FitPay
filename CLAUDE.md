@@ -26,6 +26,12 @@ Submission deadline: **July 13, 2026.**
 
 ## Absolute Rules — Never Break These
 
+### Copy & Content Style
+- **Never use em dashes (—) or hyphens-as-punctuation in any user-facing
+  content**: UI copy, marketing pages, pitch decks, video scripts, email
+  templates, SMS messages, or media assets. Rewrite with commas, periods,
+  colons, or the word "and" instead.
+
 ### Framework
 - **App Router only.** Never use Pages Router patterns.
 - API routes live in `/app/api/[route]/route.ts`
