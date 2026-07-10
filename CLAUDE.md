@@ -77,6 +77,8 @@ Submission deadline: **July 13, 2026.**
 
 ### USSD
 - Moolre provisions the shortcode — no telco setup needed.
+- **The live FitPay dial code is `*919*4012#`. This is the ONLY correct code —
+  never use any other code in UI copy, marketing pages, or media assets.**
 - USSD callback endpoint: `/app/api/ussd/callback/route.ts`
 - This endpoint must respond within **5 seconds** or the session dies.
 - USSD session state is stored in the `ussd_sessions` table with a short TTL (180s).
