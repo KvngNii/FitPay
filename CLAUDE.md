@@ -411,9 +411,15 @@ ANTHROPIC_API_KEY=
 MOOLRE_WEBHOOK_SECRET=
 
 # Config
-NEXT_PUBLIC_APP_URL=
+NEXT_PUBLIC_APP_URL=https://fitpay.dev
 USE_SANDBOX=true   # flip to false for demo/production
 ```
+
+**Production domain: `https://fitpay.dev`** (registered via Vercel, required by the
+Moolre Startup Cup organisers — no free/default `.vercel.app` submission URL).
+Connected in Vercel Domains, `NEXT_PUBLIC_APP_URL` set accordingly, and the
+Supabase Auth redirect URLs and the `monthly-client-checkin` pg_cron job both
+point at it.
 
 ---
 
