@@ -51,7 +51,8 @@ Sessions completed total: ${rule?.sessions_in_phase ?? 0}
 Last 4 sessions:
 ${sessionSummary}
 
-Write 2 encouraging sentences about their progress and one specific thing to focus on next. Be personal and motivating. Keep it under 300 characters total.`
+Write 2 encouraging sentences about their progress and one specific thing to focus on next. Be personal and motivating. Keep it under 300 characters total.
+This will be sent as an SMS over a GSM network, which only supports plain ASCII. Use only standard keyboard characters: straight quotes ('), a plain hyphen (-), and three periods (...) for an ellipsis. Never use em dashes, en dashes, curly quotes, or the ₵ symbol (write GHS instead).`
 
   let report = ''
   try {
@@ -64,7 +65,8 @@ Write 2 encouraging sentences about their progress and one specific thing to foc
   // Send report via SMS (split if needed)
   if (client.phone) {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL!
-    const message = report.slice(0, 155) + (report.length > 155 ? '…' : '')
+    // SMS is GSM-7 only — an ellipsis char corrupts or forces UCS-2 truncation.
+    const message = report.slice(0, 155) + (report.length > 155 ? '...' : '')
     fetch(`${appUrl}/api/sms/send`, {
       method: 'POST',
       headers: internalHeaders(),

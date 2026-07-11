@@ -130,7 +130,8 @@ export async function POST(req: NextRequest) {
       headers: internalHeaders(),
       body: JSON.stringify({
         to: client.phone,
-        message: `Hi ${client.name}, GH₵${amountNum} has been refunded to your ${network.toUpperCase()} mobile money. Sent by FitPay`,
+        // SMS is GSM-7 only — no ₵ (non-GSM char corrupts or forces UCS-2 truncation).
+        message: `Hi ${client.name}, GHS ${amountNum} has been refunded to your ${network.toUpperCase()} mobile money. Sent by FitPay`,
       }),
     }).catch(() => {})
   }

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { randomUUID } from 'crypto'
 import { waitUntil } from '@vercel/functions'
 import { createAdminSupabaseClient } from '@/lib/supabase/server'
-import { moolrePostPub, moolreSms, MOOLRE_ACCOUNT } from '@/lib/moolre'
+import { moolrePostPub, moolreSms, toGsmSafe, MOOLRE_ACCOUNT } from '@/lib/moolre'
 import { bookSession } from '@/lib/sessions/book'
 import type { UssdRequest, UssdResponse, ExerciseEntry, MoolrePaymentLinkData } from '@/types'
 
@@ -34,8 +34,11 @@ type SessionData = {
 }
 
 function reply(message: string, keepGoing: boolean): NextResponse {
+  // USSD is GSM-7/Latin-1 only. Sanitize as a last line of defense even
+  // though menu text is already written GSM-safe (see lib/moolre.ts).
+  const safe = toGsmSafe(message)
   return NextResponse.json(
-    { message: message.slice(0, 160), reply: keepGoing } satisfies UssdResponse,
+    { message: safe.slice(0, 160), reply: keepGoing } satisfies UssdResponse,
     { headers: CORS_HEADERS }
   )
 }
@@ -181,7 +184,8 @@ export async function POST(req: NextRequest) {
         return endSession("Your plan isn't ready yet. Check back after your first session.")
       }
 
-      const lines = plan.slice(0, 4).map((ex, i) => `${i + 1}. ${ex.name} · ${ex.sets}x${ex.reps}`)
+      // USSD is GSM-7/Latin-1 only — no ₵ or · (non-GSM chars corrupt or force UCS-2 truncation).
+      const lines = plan.slice(0, 4).map((ex, i) => `${i + 1}. ${ex.name} - ${ex.sets}x${ex.reps}`)
       return endSession(`Your next session:\n${lines.join('\n')}`)
     }
 
@@ -211,7 +215,7 @@ export async function POST(req: NextRequest) {
         return endSession('No packages available right now.')
       }
 
-      const menu = packages.map((p, i) => `${i + 1}. ${p.name} · GH₵${p.price_ghs}`).join('\n')
+      const menu = packages.map((p, i) => `${i + 1}. ${p.name} - GHS ${p.price_ghs}`).join('\n')
       return transition('buy_package', { package_ids: packages.map((p) => p.id) }, `Buy sessions:\n${menu}\n0. Back`)
     }
 

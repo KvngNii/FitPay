@@ -70,6 +70,38 @@ export async function moolrePostPub<T = unknown>(
   return JSON.parse(rawText) as MoolreResponse<T>
 }
 
+// SMS (and USSD) travel over GSM networks, which only support the GSM 7-bit
+// default alphabet - a much narrower set than UTF-8. Characters outside it
+// (curly quotes, em/en dashes, an ellipsis glyph, the ₵ sign, etc.) either get
+// silently corrupted by the gateway or force the whole message into UCS-2
+// encoding, which cuts the character budget from 160 to 70 and can truncate
+// mid-word. Prompts and templates are written GSM-safe already; this is the
+// last line of defense in case one slips through.
+const GSM_UNSAFE_REPLACEMENTS: [RegExp, string][] = [
+  [/[–—]/g, '-'],   // en dash, em dash -> hyphen
+  [/[‘’]/g, "'"],   // curly single quotes -> straight
+  [/[“”]/g, '"'],   // curly double quotes -> straight
+  [/…/g, '...'],         // ellipsis glyph -> three periods
+  [/₵/g, 'GHS'],         // cedi sign -> GHS
+]
+
+export function toGsmSafe(text: string): string {
+  return GSM_UNSAFE_REPLACEMENTS.reduce((s, [pattern, repl]) => s.replace(pattern, repl), text)
+}
+
+function sanitizeSmsBody(body: Record<string, unknown>): Record<string, unknown> {
+  const messages = body.messages
+  if (!Array.isArray(messages)) return body
+  return {
+    ...body,
+    messages: messages.map((m) =>
+      m && typeof m === 'object' && typeof (m as { message?: unknown }).message === 'string'
+        ? { ...m, message: toGsmSafe((m as { message: string }).message) }
+        : m
+    ),
+  }
+}
+
 // Use for: SMS sending (requires VAS key, separate from main keys).
 // SMS always uses production keys - sandbox mode does not deliver real messages
 // to real phones, so there is no meaningful sandbox for SMS.
@@ -77,6 +109,7 @@ export async function moolreSms<T = unknown>(
   body: Record<string, unknown>
 ): Promise<MoolreResponse<T>> {
   const vasKey = process.env.MOOLRE_VAS_KEY!
+  const safeBody = sanitizeSmsBody(body)
 
   const res = await fetch('https://api.moolre.com/open/sms/send', {
     method: 'POST',
@@ -84,7 +117,7 @@ export async function moolreSms<T = unknown>(
       'Content-Type': 'application/json',
       'X-API-VASKEY': vasKey,
     },
-    body: JSON.stringify(body),
+    body: JSON.stringify(safeBody),
   })
 
   const rawText = await res.text()

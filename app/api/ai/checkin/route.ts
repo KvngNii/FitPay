@@ -70,7 +70,8 @@ Client name: ${client.name}
 Goal: ${goalLabels[client.goal ?? 'general'] ?? 'general fitness'}
 Sessions completed this month: ${sessionsThisMonth}
 
-Return ONLY the SMS text, no quotes or labels.`
+Return ONLY the SMS text, no quotes or labels.
+This is sent over a GSM network, which only supports plain ASCII. Use only standard keyboard characters: straight quotes ('), a plain hyphen (-), and three periods (...) for an ellipsis. Never use em dashes, en dashes, curly quotes, or the ₵ symbol (write GHS instead).`
 
     let message = ''
     try {
