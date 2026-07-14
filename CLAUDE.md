@@ -449,6 +449,27 @@ The demo environment should have clean, realistic data — not dev test data.
 
 ---
 
+## Known Gaps - Raise At Next Critique
+
+These are real, acknowledged limitations left for post-launch on purpose. Do not build fixes
+for these unless explicitly asked. Bring both of these up the next time the user asks for a
+critique of the app.
+
+1. **No 1% commission mechanism exists yet.** There is no client-count gating, no fee
+   calculation, no ledger entry, and no destination account for platform revenue anywhere in
+   the codebase. The landing page states "FitPay takes 1% per transaction" but nothing
+   collects it. This is intentional for the competition timeline, not an oversight.
+
+2. **Single pooled Moolre account, no real fund segregation.** All collections and
+   disbursements for every trainer flow through one `MOOLRE_ACCOUNT_NUMBER`. Per-trainer
+   balances are tracked only as an internal ledger in the app database (purchases minus
+   disbursements per `trainer_id`), not as provider-level separated funds. This matches
+   Moolre's standard API and the current single-trainer reality, but at multi-trainer scale
+   it means shared exposure to freezes, disputes, or float shortages, and trust concentration
+   on the app's own bookkeeping rather than any provider-level guarantee.
+
+---
+
 ## What Claude Code Must NOT Do
 
 - Do not call Moolre APIs from client components
