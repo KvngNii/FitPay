@@ -67,7 +67,7 @@ export function MedicalHistoryCard({ clientId, history }: { clientId: string; hi
     : 'bg-slate-800 border-slate-700'
 
   const statusText = isExpired
-    ? 'Medical clearance expired — re-screening required'
+    ? 'Medical clearance expired. Re-screening required'
     : history.needs_medical_clearance
     ? reviewed
       ? 'Medical clearance reviewed'
@@ -108,7 +108,7 @@ export function MedicalHistoryCard({ clientId, history }: { clientId: string; hi
                   return (
                     <li key={key}>
                       {label}
-                      {detail && <span className="text-slate-400"> — {detail}</span>}
+                      {detail && <span className="text-slate-400"> · {detail}</span>}
                     </li>
                   )
                 })}

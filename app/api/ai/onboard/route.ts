@@ -1,10 +1,16 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createAdminSupabaseClient } from '@/lib/supabase/server'
+import { NextResponse } from 'next/server'
+import { createServerSupabaseClient, createAdminSupabaseClient } from '@/lib/supabase/server'
 import { callClaude } from '@/lib/ai/claude'
+import { internalHeaders } from '@/lib/internal'
 
-export async function POST(req: NextRequest) {
-  const { client_id } = await req.json()
-  if (!client_id) return NextResponse.json({ error: 'client_id required' }, { status: 400 })
+export async function POST() {
+  // Triggered by the client from the browser as they finish onboarding, so it
+  // requires an authenticated session and only ever runs for the caller's own
+  // account — a client_id from the body is ignored.
+  const auth = createServerSupabaseClient()
+  const { data: { user } } = await auth.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const client_id = user.id
 
   const admin = createAdminSupabaseClient()
 
@@ -101,7 +107,7 @@ Use weight_kg of 0 for bodyweight exercises. If health notes mention any injury 
     const msg = `New client ${client.name} just signed up on FitPay! Goal: ${goalLabels[client.goal ?? 'general']}. Check the app for their plan.`
     fetch(`${appUrl}/api/sms/send`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: internalHeaders(),
       body: JSON.stringify({ to: trainer.phone, message: msg.slice(0, 160) }),
     }).catch(() => {})
   }

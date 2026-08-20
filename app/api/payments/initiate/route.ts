@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
 
   const { data: profile } = await admin
     .from('users')
-    .select('role, email, name')
+    .select('role, email, name, trainer_id')
     .eq('id', user.id)
     .single()
 
@@ -44,6 +44,7 @@ export async function POST(req: NextRequest) {
 
   const { error: insertError } = await admin.from('purchases').insert({
     client_id: user.id,
+    trainer_id: profile.trainer_id,
     package_id: pkg.id,
     moolre_ref: externalref,
     status: 'pending',

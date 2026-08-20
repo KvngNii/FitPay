@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import type { Difficulty, ExerciseEntry } from '@/types'
+import type { Difficulty, Exercise, ExerciseEntry } from '@/types'
+import { ExercisePicker } from '@/components/ExercisePicker'
 
 const EMPTY_EXERCISE: ExerciseEntry = {
   name: '',
@@ -44,6 +45,12 @@ export function LogSessionCard({ session }: { session: SessionToLog }) {
 
   function addExercise() {
     setExercises((prev) => [...prev, { ...EMPTY_EXERCISE }])
+  }
+
+  function selectExercise(index: number, ex: Exercise) {
+    setExercises((prev) =>
+      prev.map((e, i) => (i === index ? { ...e, name: ex.name, exercise_id: ex.id, gif_url: ex.gif_url ?? undefined } : e))
+    )
   }
 
   function removeExercise(index: number) {
@@ -132,13 +139,17 @@ export function LogSessionCard({ session }: { session: SessionToLog }) {
             {exercises.map((exercise, index) => (
               <div key={index} className="p-2.5 rounded-lg bg-slate-800/60 border border-slate-700 space-y-2">
                 <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    placeholder="Exercise name"
-                    value={exercise.name}
-                    onChange={(e) => updateExercise(index, 'name', e.target.value)}
-                    className="flex-1"
-                  />
+                  <div className="flex-1">
+                    <ExercisePicker
+                      value={exercise.name}
+                      onChange={(name) => {
+                        setExercises((prev) =>
+                          prev.map((e, i) => (i === index ? { ...e, name, exercise_id: undefined, gif_url: undefined } : e))
+                        )
+                      }}
+                      onSelect={(ex) => selectExercise(index, ex)}
+                    />
+                  </div>
                   <button
                     type="button"
                     onClick={() => removeExercise(index)}
@@ -147,6 +158,20 @@ export function LogSessionCard({ session }: { session: SessionToLog }) {
                     Remove
                   </button>
                 </div>
+
+                {exercise.gif_url && (
+                  <div className="flex items-center gap-2">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={exercise.gif_url}
+                      alt={`${exercise.name} technique`}
+                      width={56}
+                      height={56}
+                      className="rounded-md bg-slate-900 shrink-0"
+                    />
+                    <p className="text-[10px] text-slate-600">© Gym visual — gymvisual.com</p>
+                  </div>
+                )}
 
                 <div className="grid grid-cols-3 gap-2">
                   <div>

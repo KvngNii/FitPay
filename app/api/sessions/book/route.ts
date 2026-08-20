@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const admin = createAdminSupabaseClient()
-  const { data: profile } = await admin.from('users').select('role').eq('id', user.id).single()
+  const { data: profile } = await admin.from('users').select('role, trainer_id').eq('id', user.id).single()
   if (!profile) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
   const body = await req.json()
@@ -20,12 +20,18 @@ export async function POST(req: NextRequest) {
   if (profile.role === 'trainer') {
     client_id = body.client_id
     trainer_id = user.id
+    // A trainer may only book for their own clients.
+    const { data: client } = await admin.from('users').select('trainer_id').eq('id', client_id).single()
+    if (!client || client.trainer_id !== user.id) {
+      return NextResponse.json({ error: 'That client is not on your roster' }, { status: 403 })
+    }
   } else {
-    // Clients can only book for themselves
+    // Clients can only book for themselves, with their own assigned trainer.
     client_id = user.id
-    const { data: trainer } = await admin.from('users').select('id').eq('role', 'trainer').limit(1).single()
-    if (!trainer) return NextResponse.json({ error: 'No trainer available' }, { status: 500 })
-    trainer_id = trainer.id
+    if (!profile.trainer_id) {
+      return NextResponse.json({ error: 'No trainer is assigned to your account yet.' }, { status: 400 })
+    }
+    trainer_id = profile.trainer_id
   }
 
   if (!client_id || !scheduled_at) {

@@ -1,10 +1,12 @@
-import { createAdminSupabaseClient } from '@/lib/supabase/server'
+import { createAdminSupabaseClient, createServerSupabaseClient } from '@/lib/supabase/server'
 import { LogSessionCard } from './LogSessionCard'
 import type { ExerciseEntry } from '@/types'
 
 export const dynamic = 'force-dynamic'
 
 export default async function LogPage() {
+  const auth = createServerSupabaseClient()
+  const { data: { user } } = await auth.auth.getUser()
   const admin = createAdminSupabaseClient()
   const now = new Date().toISOString()
 
@@ -12,6 +14,7 @@ export default async function LogPage() {
     .from('sessions')
     .select('id, client_id, scheduled_at, notes, users!client_id(name)')
     .eq('status', 'scheduled')
+    .eq('trainer_id', user!.id)
     .lte('scheduled_at', now)
     .order('scheduled_at', { ascending: false })
     .limit(20)

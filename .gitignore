@@ -25,8 +25,10 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# local env files
-.env*.local
+# local env files — ignore all env files except the checked-in template
+.env
+.env.*
+!.env.example
 
 # vercel
 .vercel

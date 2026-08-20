@@ -49,6 +49,7 @@ export async function POST(req: NextRequest) {
     admin
       .from('purchases')
       .select('packages(price_ghs)')
+      .eq('trainer_id', user.id)
       .in('status', ['active', 'expired']),
     admin
       .from('disbursements')
@@ -93,10 +94,10 @@ export async function POST(req: NextRequest) {
       amount: String(amountNum),
       receiver: phone,
       externalref,
-      reference: `FitPay withdrawal - ${profile.name}`,
+      reference: `FitPay withdrawal for ${profile.name}`,
       accountnumber: MOOLRE_ACCOUNT,
     })
-    console.log('Moolre transfer response:', JSON.stringify(transferRes))
+    console.log('Moolre withdrawal status:', transferRes.status)
   } catch (err) {
     console.error('Moolre transfer failed:', err)
     await admin.from('disbursements').update({ status: 'failed' }).eq('moolre_ref', externalref)

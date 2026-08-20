@@ -1,0 +1,38 @@
+{
+  "name": "FitPay",
+  "short_name": "FitPay",
+  "description": "Session management and payments for personal trainers",
+  "start_url": "/client/dashboard",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#070d09",
+  "theme_color": "#0fdc82",
+  "categories": ["fitness", "health", "finance"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Book a Session",
+      "url": "/client/book",
+      "description": "Schedule your next session"
+    },
+    {
+      "name": "My Progress",
+      "url": "/client/progress",
+      "description": "View your training progress"
+    }
+  ]
+}

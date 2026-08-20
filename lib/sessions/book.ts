@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { internalHeaders } from '@/lib/internal'
 
 type BookSessionInput = {
   client_id: string
@@ -34,6 +35,7 @@ export async function bookSession(
   const { data: clash } = await admin
     .from('sessions')
     .select('id')
+    .eq('trainer_id', trainer_id)
     .eq('scheduled_at', scheduled_at)
     .eq('status', 'scheduled')
     .limit(1)
@@ -72,11 +74,11 @@ export async function bookSession(
     const date = new Date(scheduled_at)
     const dateStr = date.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })
     const timeStr = date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
-    const msg = `Hi ${client.name}! Your session is booked for ${dateStr} at ${timeStr}. See you then! - FitPay`
+    const msg = `Hi ${client.name}! Your session is booked for ${dateStr} at ${timeStr}. See you then! Sent by FitPay`
     const appUrl = process.env.NEXT_PUBLIC_APP_URL!
     fetch(`${appUrl}/api/sms/send`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: internalHeaders(),
       body: JSON.stringify({ to: client.phone, message: msg.slice(0, 160) }),
     }).catch(() => {})
   }

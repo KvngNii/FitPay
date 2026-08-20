@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabaseClient } from '@/lib/supabase/server'
 import { callClaude } from '@/lib/ai/claude'
+import { rejectIfNotInternal } from '@/lib/internal'
 import type { ExerciseEntry } from '@/types'
 
 export async function POST(req: NextRequest) {
+  const blocked = rejectIfNotInternal(req)
+  if (blocked) return blocked
+
   const { session_id } = await req.json()
   if (!session_id) return NextResponse.json({ error: 'session_id required' }, { status: 400 })
 

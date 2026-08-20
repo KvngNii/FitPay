@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { randomUUID } from 'crypto'
 import { createServerSupabaseClient, createAdminSupabaseClient } from '@/lib/supabase/server'
 import { moolrePost, MOOLRE_ACCOUNT } from '@/lib/moolre'
+import { internalHeaders } from '@/lib/internal'
 
 // Channel codes for Moolre transfers
 const NETWORK_CHANNELS: Record<string, string> = {
@@ -35,11 +36,14 @@ export async function POST(req: NextRequest) {
 
   const { data: purchase } = await admin
     .from('purchases')
-    .select('id, status, client_id, packages(price_ghs)')
+    .select('id, status, client_id, trainer_id, packages(price_ghs)')
     .eq('id', purchase_id)
     .single()
 
   if (!purchase) return NextResponse.json({ error: 'Purchase not found' }, { status: 404 })
+  if (purchase.trainer_id !== user.id) {
+    return NextResponse.json({ error: 'That purchase is not on your roster' }, { status: 403 })
+  }
   if (purchase.status === 'refunded') {
     return NextResponse.json({ error: 'Purchase already refunded' }, { status: 400 })
   }
@@ -82,10 +86,10 @@ export async function POST(req: NextRequest) {
       amount: String(amountNum),
       receiver: client.phone,
       externalref,
-      reference: `FitPay refund - ${client.name}`,
+      reference: `FitPay refund for ${client.name}`,
       accountnumber: MOOLRE_ACCOUNT,
     })
-    console.log('Moolre refund transfer response:', JSON.stringify(transferRes))
+    console.log('Moolre refund status:', transferRes.status)
   } catch (err) {
     console.error('Moolre refund transfer failed:', err)
     await admin.from('disbursements').update({ status: 'failed' }).eq('moolre_ref', externalref)
@@ -123,10 +127,11 @@ export async function POST(req: NextRequest) {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL!
     fetch(`${appUrl}/api/sms/send`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: internalHeaders(),
       body: JSON.stringify({
         to: client.phone,
-        message: `Hi ${client.name}, GH₵${amountNum} has been refunded to your ${network.toUpperCase()} mobile money. - FitPay`,
+        // SMS is GSM-7 only — no ₵ (non-GSM char corrupts or forces UCS-2 truncation).
+        message: `Hi ${client.name}, GHS ${amountNum} has been refunded to your ${network.toUpperCase()} mobile money. Sent by FitPay`,
       }),
     }).catch(() => {})
   }

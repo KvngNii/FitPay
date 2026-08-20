@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { randomUUID } from 'crypto'
+import { waitUntil } from '@vercel/functions'
 import { createAdminSupabaseClient } from '@/lib/supabase/server'
-import { moolrePostPub, MOOLRE_ACCOUNT } from '@/lib/moolre'
+import { moolrePostPub, moolreSms, toGsmSafe, MOOLRE_ACCOUNT } from '@/lib/moolre'
 import { bookSession } from '@/lib/sessions/book'
 import type { UssdRequest, UssdResponse, ExerciseEntry, MoolrePaymentLinkData } from '@/types'
 
@@ -11,7 +12,7 @@ const CORS_HEADERS = {
   'Access-Control-Allow-Headers': 'Content-Type',
 }
 
-// Preflight — needed by the Moolre browser-based USSD simulator
+// Preflight - needed by the Moolre browser-based USSD simulator
 export async function OPTIONS() {
   return new NextResponse(null, { status: 204, headers: CORS_HEADERS })
 }
@@ -33,8 +34,11 @@ type SessionData = {
 }
 
 function reply(message: string, keepGoing: boolean): NextResponse {
+  // USSD is GSM-7/Latin-1 only. Sanitize as a last line of defense even
+  // though menu text is already written GSM-safe (see lib/moolre.ts).
+  const safe = toGsmSafe(message)
   return NextResponse.json(
-    { message: message.slice(0, 160), reply: keepGoing } satisfies UssdResponse,
+    { message: safe.slice(0, 160), reply: keepGoing } satisfies UssdResponse,
     { headers: CORS_HEADERS }
   )
 }
@@ -43,6 +47,12 @@ function reply(message: string, keepGoing: boolean): NextResponse {
 function toLocalPhone(msisdn: string): string {
   const digits = msisdn.replace(/\D/g, '')
   return digits.startsWith('233') ? `0${digits.slice(3)}` : digits
+}
+
+// Moolre SMS API expects international format 233XXXXXXXXX.
+function toInternationalPhone(local: string): string {
+  const digits = local.replace(/\D/g, '')
+  return digits.startsWith('0') ? `233${digits.slice(1)}` : digits
 }
 
 function mainMenuText(): string {
@@ -174,6 +184,7 @@ export async function POST(req: NextRequest) {
         return endSession("Your plan isn't ready yet. Check back after your first session.")
       }
 
+      // USSD is GSM-7/Latin-1 only — no ₵ or · (non-GSM chars corrupt or force UCS-2 truncation).
       const lines = plan.slice(0, 4).map((ex, i) => `${i + 1}. ${ex.name} - ${ex.sets}x${ex.reps}`)
       return endSession(`Your next session:\n${lines.join('\n')}`)
     }
@@ -204,7 +215,7 @@ export async function POST(req: NextRequest) {
         return endSession('No packages available right now.')
       }
 
-      const menu = packages.map((p, i) => `${i + 1}. ${p.name} - GH₵${p.price_ghs}`).join('\n')
+      const menu = packages.map((p, i) => `${i + 1}. ${p.name} - GHS ${p.price_ghs}`).join('\n')
       return transition('buy_package', { package_ids: packages.map((p) => p.id) }, `Buy sessions:\n${menu}\n0. Back`)
     }
 
@@ -245,14 +256,14 @@ export async function POST(req: NextRequest) {
     scheduled.setUTCDate(scheduled.getUTCDate() + data.day_offset)
     scheduled.setUTCHours(TIME_OPTIONS[idx].hour, 0, 0, 0)
 
-    const { data: trainer } = await admin.from('users').select('id').eq('role', 'trainer').limit(1).single()
-    if (!trainer) {
-      return endSession('Booking unavailable right now. Try again later.')
+    const { data: bookingClient } = await admin.from('users').select('trainer_id').eq('id', clientId).single()
+    if (!bookingClient?.trainer_id) {
+      return endSession('No trainer is assigned to your account yet. Try again later.')
     }
 
     const result = await bookSession(admin, {
       client_id: clientId,
-      trainer_id: trainer.id,
+      trainer_id: bookingClient.trainer_id,
       scheduled_at: scheduled.toISOString(),
     })
 
@@ -278,7 +289,7 @@ export async function POST(req: NextRequest) {
     const packageId = packageIds[idx]
     const [{ data: pkg }, { data: client }] = await Promise.all([
       admin.from('packages').select('id, name, sessions, price_ghs, duration_days').eq('id', packageId).single(),
-      admin.from('users').select('phone, email, name').eq('id', clientId).single(),
+      admin.from('users').select('phone, email, name, trainer_id').eq('id', clientId).single(),
     ])
 
     if (!pkg || !client) {
@@ -291,6 +302,7 @@ export async function POST(req: NextRequest) {
 
     const { error: insertError } = await admin.from('purchases').insert({
       client_id: clientId,
+      trainer_id: client.trainer_id,
       package_id: pkg.id,
       moolre_ref: externalref,
       status: 'pending',
@@ -330,15 +342,19 @@ export async function POST(req: NextRequest) {
       return endSession('Could not start payment. Try again later.')
     }
 
+    // Send SMS after the USSD response is returned - avoids the 5-second telco timeout.
+    // waitUntil keeps the Vercel function alive until the SMS call completes.
     if (client.phone) {
-      fetch(`${appUrl}/api/sms/send`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          to: client.phone,
-          message: `Complete your FitPay payment: ${moolreRes.data.authorization_url}`.slice(0, 160),
-        }),
-      }).catch(() => {})
+      const senderid = process.env.MOOLRE_SENDER_ID ?? 'FitPay'
+      const smsMsg = `FitPay payment link: ${moolreRes.data.authorization_url}`.slice(0, 160)
+      const smsRecipient = toInternationalPhone(client.phone)
+      waitUntil(
+        moolreSms({
+          type: 1,
+          senderid,
+          messages: [{ recipient: smsRecipient, message: smsMsg }],
+        }).catch((err) => console.error('USSD SMS send failed:', err))
+      )
     }
 
     return endSession('Payment link sent via SMS. Complete payment to activate your sessions.')

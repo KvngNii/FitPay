@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient, createAdminSupabaseClient } from '@/lib/supabase/server'
+import { internalHeaders } from '@/lib/internal'
 
 export async function POST(req: NextRequest) {
   const auth = createServerSupabaseClient()
@@ -17,11 +18,14 @@ export async function POST(req: NextRequest) {
 
   const { data: session } = await admin
     .from('sessions')
-    .select('id, status, client_id, purchase_id')
+    .select('id, status, client_id, purchase_id, trainer_id')
     .eq('id', session_id)
     .single()
 
   if (!session) return NextResponse.json({ error: 'Session not found' }, { status: 404 })
+  if (session.trainer_id !== user.id) {
+    return NextResponse.json({ error: 'That session is not on your roster' }, { status: 403 })
+  }
   if (session.status !== 'scheduled') {
     return NextResponse.json({ error: 'Session is not scheduled' }, { status: 400 })
   }
@@ -66,13 +70,13 @@ export async function POST(req: NextRequest) {
   if (injury_flag) {
     fetch(`${appUrl}/api/ai/adapt`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: internalHeaders(),
       body: JSON.stringify({ session_id, client_id: session.client_id, injury_notes }),
     }).catch(() => {})
   } else {
     fetch(`${appUrl}/api/engine/progress`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: internalHeaders(),
       body: JSON.stringify({ session_id, client_id: session.client_id }),
     }).catch(() => {})
   }
@@ -81,7 +85,7 @@ export async function POST(req: NextRequest) {
   if (newSessionsInPhase % 4 === 0) {
     fetch(`${appUrl}/api/ai/report`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: internalHeaders(),
       body: JSON.stringify({ session_id, client_id: session.client_id }),
     }).catch(() => {})
   }

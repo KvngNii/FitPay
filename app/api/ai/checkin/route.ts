@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabaseClient } from '@/lib/supabase/server'
 import { callClaude } from '@/lib/ai/claude'
+import { rejectIfNotInternal, internalHeaders } from '@/lib/internal'
 
 export async function POST(req: NextRequest) {
+  const blocked = rejectIfNotInternal(req)
+  if (blocked) return blocked
+
   // Accepts optional client_id to check in a single client; otherwise processes all active clients
   const body = await req.json().catch(() => ({}))
   const { client_id } = body
@@ -66,7 +70,8 @@ Client name: ${client.name}
 Goal: ${goalLabels[client.goal ?? 'general'] ?? 'general fitness'}
 Sessions completed this month: ${sessionsThisMonth}
 
-Return ONLY the SMS text, no quotes or labels.`
+Return ONLY the SMS text, no quotes or labels.
+This is sent over a GSM network, which only supports plain ASCII. Use only standard keyboard characters: straight quotes ('), a plain hyphen (-), and three periods (...) for an ellipsis. Never use em dashes, en dashes, curly quotes, or the ₵ symbol (write GHS instead).`
 
     let message = ''
     try {
@@ -74,13 +79,13 @@ Return ONLY the SMS text, no quotes or labels.`
       message = message.trim().slice(0, 155)
     } catch (err) {
       console.error(`Checkin Claude call failed for ${client.name}:`, err)
-      message = `Hey ${client.name}! Great work this month — ${sessionsThisMonth} session${sessionsThisMonth !== 1 ? 's' : ''} done. Keep pushing toward your ${goalLabels[client.goal ?? 'general']} goal!`.slice(0, 155)
+      message = `Hey ${client.name}! Great work this month, ${sessionsThisMonth} session${sessionsThisMonth !== 1 ? 's' : ''} done. Keep pushing toward your ${goalLabels[client.goal ?? 'general']} goal!`.slice(0, 155)
     }
 
     if (client.phone) {
       fetch(`${appUrl}/api/sms/send`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: internalHeaders(),
         body: JSON.stringify({ to: client.phone, message }),
       }).catch(() => {})
       sent++

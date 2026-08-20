@@ -1,12 +1,12 @@
 # FitPay — Claude Code Project Memory
 
 ## What This Project Is
-FitPay is a PT (personal trainer) client management and payment platform built for the
-Moolre Startup Cup 2026. It is a real product — the trainer is an active certified PT in
-Accra, Ghana with real clients. The platform manages session bookings, payments, workout
-progression, and client communication.
-
-Submission deadline: **July 13, 2026.**
+FitPay is a PT (personal trainer) client management and payment platform. It is a real,
+ongoing production product, not a competition entry: the trainer is an active certified PT
+in Accra, Ghana with real clients. The platform manages session bookings, payments, workout
+progression, and client communication. FitPay originated as a submission to the Moolre
+Startup Cup 2026, but has since moved past that timeline into standard real-world
+development and operation.
 
 ---
 
@@ -18,13 +18,19 @@ Submission deadline: **July 13, 2026.**
 | Styling | Tailwind CSS | Speed |
 | Database | Supabase (PostgreSQL) | Auth + DB + RLS + pg_cron built in |
 | ORM | Supabase JS client | No Prisma — too much overhead for timeline |
-| Payments | Moolre APIs | Competition requirement |
+| Payments | Moolre APIs | Chosen payments provider |
 | AI | Anthropic Claude API | Selective triggers only |
 | Deployment | Vercel | Next.js native |
 
 ---
 
 ## Absolute Rules — Never Break These
+
+### Copy & Content Style
+- **Never use em dashes (—) or hyphens-as-punctuation in any user-facing
+  content**: UI copy, marketing pages, pitch decks, video scripts, email
+  templates, SMS messages, or media assets. Rewrite with commas, periods,
+  colons, or the word "and" instead.
 
 ### Framework
 - **App Router only.** Never use Pages Router patterns.
@@ -77,6 +83,8 @@ Submission deadline: **July 13, 2026.**
 
 ### USSD
 - Moolre provisions the shortcode — no telco setup needed.
+- **The live FitPay dial code is `*919*4012#`. This is the ONLY correct code —
+  never use any other code in UI copy, marketing pages, or media assets.**
 - USSD callback endpoint: `/app/api/ussd/callback/route.ts`
 - This endpoint must respond within **5 seconds** or the session dies.
 - USSD session state is stored in the `ussd_sessions` table with a short TTL (180s).
@@ -403,9 +411,14 @@ ANTHROPIC_API_KEY=
 MOOLRE_WEBHOOK_SECRET=
 
 # Config
-NEXT_PUBLIC_APP_URL=
+NEXT_PUBLIC_APP_URL=https://fitpay.dev
 USE_SANDBOX=true   # flip to false for demo/production
 ```
+
+**Production domain: `https://fitpay.dev`** (registered via Vercel, a proper paid domain
+rather than the free/default `.vercel.app` subdomain). Connected in Vercel Domains,
+`NEXT_PUBLIC_APP_URL` set accordingly, and the Supabase Auth redirect URLs and the
+`monthly-client-checkin` pg_cron job both point at it.
 
 ---
 
@@ -414,8 +427,8 @@ USE_SANDBOX=true   # flip to false for demo/production
 | Environment | Supabase Project | Moolre | Purpose |
 |---|---|---|---|
 | development | fitpay-dev | Sandbox | Daily building |
-| demo | fitpay-demo | Sandbox | Competition pitch |
-| production | fitpay-prod | Live | Post-competition |
+| demo | fitpay-demo | Sandbox | Sales demos, stakeholder walkthroughs |
+| production | fitpay-prod | Live | Real trainer, real clients, live money |
 
 Never use the live Moolre API keys during development.
 The demo environment should have clean, realistic data — not dev test data.
@@ -432,6 +445,27 @@ The demo environment should have clean, realistic data — not dev test data.
 | Vercel cron vs pg_cron | pg_cron | Vercel free tier limitations, runs inside DB |
 | React Native vs Next.js | Next.js | 6-week timeline, single codebase |
 | Co-trainer payouts vs withdrawals | Trainer withdrawal + client refunds | Authentic — Nii is solo PT |
+
+---
+
+## Known Gaps - Raise At Next Critique
+
+These are real, acknowledged limitations left for post-launch on purpose. Do not build fixes
+for these unless explicitly asked. Bring both of these up the next time the user asks for a
+critique of the app.
+
+1. **No 1% commission mechanism exists yet.** There is no client-count gating, no fee
+   calculation, no ledger entry, and no destination account for platform revenue anywhere in
+   the codebase. The landing page states "FitPay takes 1% per transaction" but nothing
+   collects it. This is intentional given the current build priorities, not an oversight.
+
+2. **Single pooled Moolre account, no real fund segregation.** All collections and
+   disbursements for every trainer flow through one `MOOLRE_ACCOUNT_NUMBER`. Per-trainer
+   balances are tracked only as an internal ledger in the app database (purchases minus
+   disbursements per `trainer_id`), not as provider-level separated funds. This matches
+   Moolre's standard API and the current single-trainer reality, but at multi-trainer scale
+   it means shared exposure to freezes, disputes, or float shortages, and trust concentration
+   on the app's own bookkeeping rather than any provider-level guarantee.
 
 ---
 

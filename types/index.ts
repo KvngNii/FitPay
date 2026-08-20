@@ -8,6 +8,7 @@ export type SessionStatus = 'scheduled' | 'completed' | 'cancelled' | 'no_show'
 export type Difficulty = 'easy' | 'moderate' | 'hard'
 export type DisbursementType = 'withdrawal' | 'refund'
 export type DisbursementStatus = 'pending' | 'success' | 'failed'
+export type RefundRequestStatus = 'pending' | 'approved' | 'rejected'
 
 // Database tables
 export type User = {
@@ -16,7 +17,9 @@ export type User = {
   phone: string
   email: string | null
   role: UserRole
+  trainer_id: string | null
   goal: FitnessGoal | null
+  goals: FitnessGoal[]
   fitness_level: FitnessLevel | null
   date_of_birth: string | null
   gender: Gender | null
@@ -67,6 +70,7 @@ export type Package = {
 export type Purchase = {
   id: string
   client_id: string
+  trainer_id: string | null
   package_id: string
   moolre_ref: string
   status: PurchaseStatus
@@ -93,6 +97,26 @@ export type ExerciseEntry = {
   weight_kg: number
   difficulty: Difficulty
   notes?: string
+  // Set when the exercise was picked from the exercise library, so the
+  // technique GIF can be shown alongside it. Absent for free-typed entries.
+  exercise_id?: string
+  gif_url?: string
+}
+
+// A row from the read-only `exercises` reference table.
+export type Exercise = {
+  id: string
+  name: string
+  category: string
+  body_part: string
+  equipment: string
+  target: string | null
+  muscle_group: string | null
+  secondary_muscles: string[]
+  instructions: string | null
+  image_url: string | null
+  gif_url: string | null
+  attribution: string
 }
 
 export type WorkoutLog = {
@@ -127,6 +151,18 @@ export type Disbursement = {
   moolre_ref: string | null
   status: DisbursementStatus
   created_at: string
+}
+
+export type RefundRequest = {
+  id: string
+  purchase_id: string
+  client_id: string
+  trainer_id: string | null
+  amount_ghs: number
+  network: string
+  status: RefundRequestStatus
+  requested_at: string
+  resolved_at: string | null
 }
 
 export type UssdSession = {

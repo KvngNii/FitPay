@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabaseClient } from '@/lib/supabase/server'
 import { runProgressionEngine } from '@/lib/engine/progression'
+import { rejectIfNotInternal } from '@/lib/internal'
 import type { ProgressionRule, WorkoutLog } from '@/types'
 
 // Runs the deterministic rules engine after a session is completed.
@@ -10,6 +11,9 @@ import type { ProgressionRule, WorkoutLog } from '@/types'
 // Updates progression_rules (sessions_in_phase, current_phase, last_updated).
 // Claude is NEVER called here.
 export async function POST(req: NextRequest) {
+  const blocked = rejectIfNotInternal(req)
+  if (blocked) return blocked
+
   const { session_id, client_id } = await req.json()
   if (!session_id || !client_id) {
     return NextResponse.json({ error: 'session_id and client_id are required' }, { status: 400 })

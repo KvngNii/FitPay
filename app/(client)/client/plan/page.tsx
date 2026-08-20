@@ -19,14 +19,25 @@ function DifficultyBadge({ d }: { d: string }) {
 }
 
 function ExerciseList({ exercises, label }: { exercises: ExerciseEntry[]; label: string }) {
+  const hasGifs = exercises.some((ex) => ex.gif_url)
   return (
     <section className="mb-6">
-      <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">{label}</h2>
+      <h2 className="section-label mb-3">{label}</h2>
       <div className="space-y-2">
         {exercises.map((ex, i) => (
           <div key={i} className="card">
             <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
+              {ex.gif_url && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={ex.gif_url}
+                  alt={`${ex.name} technique demonstration`}
+                  width={56}
+                  height={56}
+                  className="rounded-lg bg-slate-800 shrink-0"
+                />
+              )}
+              <div className="min-w-0 flex-1">
                 <p className="font-medium text-slate-50 truncate">{ex.name}</p>
                 <p className="text-sm text-slate-400 mt-0.5">
                   {ex.sets} sets × {ex.reps} reps
@@ -39,6 +50,7 @@ function ExerciseList({ exercises, label }: { exercises: ExerciseEntry[]; label:
           </div>
         ))}
       </div>
+      {hasGifs && <p className="text-[11px] text-slate-600 mt-2">Technique animations © Gym visual — gymvisual.com</p>}
     </section>
   )
 }
@@ -56,7 +68,7 @@ export default async function PlanPage() {
     .eq('client_id', user.id)
     .single()
 
-  // Look for the most recent next_plan — from injury adaptation or routine progression
+  // Look for the most recent next_plan - from injury adaptation or routine progression
   const { data: latestLog } = await admin
     .from('workout_logs')
     .select('next_plan, ai_generated, created_at')
@@ -86,7 +98,7 @@ export default async function PlanPage() {
   return (
     <main className="p-4 max-w-lg mx-auto">
       <div className="mb-5">
-        <h1 className="text-2xl font-bold text-emerald-400">My Plan</h1>
+        <h1 className="page-title">My Plan</h1>
         {rule && (
           <p className="text-sm text-slate-400 mt-1">
             {rule.sessions_in_phase} session{rule.sessions_in_phase !== 1 ? 's' : ''} completed
@@ -102,7 +114,7 @@ export default async function PlanPage() {
 
       {isAdapted && latestPlan && latestPlan.length > 0 && (
         <div className="mb-4 px-3 py-2 rounded-lg bg-yellow-900/20 border border-yellow-800/40">
-          <p className="text-xs text-yellow-400 font-medium">Injury-adapted plan — modified to keep you safe</p>
+          <p className="text-xs text-yellow-400 font-medium">Adapted for your injury to keep you safe</p>
         </div>
       )}
 
