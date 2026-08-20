@@ -19,7 +19,7 @@ Last updated: 2026-08-20
 8. [USSD](#8-ussd)
 9. [AI (Claude)](#9-ai-claude)
 10. [Codebase Map](#10-codebase-map)
-11. [Infrastructure & Environments](#11-infrastructure--environments)
+11. [Infrastructure & Environments](#11-infrastructure-environments)
 12. [Using the App](#12-using-the-app)
 13. [Known Gaps](#13-known-gaps)
 
