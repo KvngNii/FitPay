@@ -19,6 +19,7 @@ function DifficultyBadge({ d }: { d: string }) {
 }
 
 function ExerciseList({ exercises, label }: { exercises: ExerciseEntry[]; label: string }) {
+  const hasGifs = exercises.some((ex) => ex.gif_url)
   return (
     <section className="mb-6">
       <h2 className="section-label mb-3">{label}</h2>
@@ -26,7 +27,17 @@ function ExerciseList({ exercises, label }: { exercises: ExerciseEntry[]; label:
         {exercises.map((ex, i) => (
           <div key={i} className="card">
             <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
+              {ex.gif_url && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={ex.gif_url}
+                  alt={`${ex.name} technique demonstration`}
+                  width={56}
+                  height={56}
+                  className="rounded-lg bg-slate-800 shrink-0"
+                />
+              )}
+              <div className="min-w-0 flex-1">
                 <p className="font-medium text-slate-50 truncate">{ex.name}</p>
                 <p className="text-sm text-slate-400 mt-0.5">
                   {ex.sets} sets × {ex.reps} reps
@@ -39,6 +50,7 @@ function ExerciseList({ exercises, label }: { exercises: ExerciseEntry[]; label:
           </div>
         ))}
       </div>
+      {hasGifs && <p className="text-[11px] text-slate-600 mt-2">Technique animations © Gym visual — gymvisual.com</p>}
     </section>
   )
 }

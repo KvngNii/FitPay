@@ -97,6 +97,26 @@ export type ExerciseEntry = {
   weight_kg: number
   difficulty: Difficulty
   notes?: string
+  // Set when the exercise was picked from the exercise library, so the
+  // technique GIF can be shown alongside it. Absent for free-typed entries.
+  exercise_id?: string
+  gif_url?: string
+}
+
+// A row from the read-only `exercises` reference table.
+export type Exercise = {
+  id: string
+  name: string
+  category: string
+  body_part: string
+  equipment: string
+  target: string | null
+  muscle_group: string | null
+  secondary_muscles: string[]
+  instructions: string | null
+  image_url: string | null
+  gif_url: string | null
+  attribution: string
 }
 
 export type WorkoutLog = {
